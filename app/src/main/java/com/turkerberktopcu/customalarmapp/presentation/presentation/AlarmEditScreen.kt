@@ -1,5 +1,11 @@
 package com.turkerberktopcu.customalarmapp.presentation
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -8,12 +14,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -24,24 +30,22 @@ import androidx.wear.compose.material.TimeText
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.wear.compose.material.MaterialTheme
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun AlarmEditScreen(navController: NavController) {
+    val context = LocalContext.current
+
     val hours = (0..23).toList()
     val minutes = (0..59).toList()
 
-    // Picker states
     val hourPickerState = rememberPickerState(hours.size, initiallySelectedOption = 6)
     val minutePickerState = rememberPickerState(minutes.size, initiallySelectedOption = 0)
 
-    // Keep track of selected hour/minute
     var selectedHourIndex by remember { mutableStateOf(hourPickerState.selectedOption) }
     var selectedMinuteIndex by remember { mutableStateOf(minutePickerState.selectedOption) }
 
-    // Update when picker changes
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHourIndex = hourPickerState.selectedOption
     }
@@ -49,9 +53,7 @@ fun AlarmEditScreen(navController: NavController) {
         selectedMinuteIndex = minutePickerState.selectedOption
     }
 
-    // Alarm label
     var alarmLabel by remember { mutableStateOf("") }
-
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -63,7 +65,7 @@ fun AlarmEditScreen(navController: NavController) {
                 .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
-            // Back arrow icon in white
+            // Geri butonu
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -74,7 +76,6 @@ fun AlarmEditScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Title in white
             Text(
                 text = "Saat ayarla",
                 style = MaterialTheme.typography.title2.copy(color = Color.White)
@@ -82,38 +83,24 @@ fun AlarmEditScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Row with hour/minute pickers
+            // Saat / dakika picker
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // "Sa" label in white
-                Text(
-                    text = "Sa ",
-                    style = MaterialTheme.typography.body1.copy(color = Color.White)
-                )
-
+                Text("Sa ", style = MaterialTheme.typography.body1.copy(color = Color.White))
                 Picker(
                     state = hourPickerState,
                     modifier = Modifier.size(width = 60.dp, height = 100.dp)
                 ) { optionIndex ->
-                    // Display hour in white
                     Text(
                         text = hours[optionIndex].toString().padStart(2, '0'),
                         style = MaterialTheme.typography.display1.copy(color = Color.White)
                     )
                 }
-
                 Spacer(modifier = Modifier.width(16.dp))
-
-                // "dk" label in white
-                Text(
-                    text = "dk ",
-                    style = MaterialTheme.typography.body1.copy(color = Color.White)
-                )
-
+                Text("dk ", style = MaterialTheme.typography.body1.copy(color = Color.White))
                 Picker(
                     state = minutePickerState,
                     modifier = Modifier.size(width = 60.dp, height = 100.dp)
                 ) { optionIndex ->
-                    // Display minute in white
                     Text(
                         text = minutes[optionIndex].toString().padStart(2, '0'),
                         style = MaterialTheme.typography.display1.copy(color = Color.White)
@@ -123,7 +110,6 @@ fun AlarmEditScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Wrap the OutlinedTextField in a CompositionLocalProvider so that its default text, label, and cursor use white.
             CompositionLocalProvider(LocalContentColor provides Color.White) {
                 OutlinedTextField(
                     value = alarmLabel,
@@ -136,12 +122,45 @@ fun AlarmEditScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // "Sonraki" button with white text
+            // Alarm planlaması
             Button(
                 onClick = {
+                    // Önce, exact alarm izninin verilip verilmediğini kontrol et
+                    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    if (!alarmManager.canScheduleExactAlarms()) {
+                        // Eğer izin yoksa kullanıcıyı ayar ekranına yönlendir
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                            .apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                        context.startActivity(intent)
+                        return@Button
+                    }
+
                     val chosenHour = hours[selectedHourIndex]
                     val chosenMinute = minutes[selectedMinuteIndex]
-                    // TODO: Save or schedule the alarm using chosenHour, chosenMinute, and alarmLabel.
+
+                    // Alarm zamanını (bugün için) hesapla
+                    val cal = java.util.Calendar.getInstance().apply {
+                        timeInMillis = System.currentTimeMillis()
+                        set(java.util.Calendar.HOUR_OF_DAY, chosenHour)
+                        set(java.util.Calendar.MINUTE, chosenMinute)
+                        set(java.util.Calendar.SECOND, 0)
+                        set(java.util.Calendar.MILLISECOND, 0)
+                    }
+
+                    // Geçmiş saate ayarlandıysa alarmı bir sonraki güne taşı
+                    if (cal.timeInMillis < System.currentTimeMillis()) {
+                        cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
+                    }
+                    val newAlarmTime = System.currentTimeMillis() + 60 * 1000  // 1 minute from now
+
+                    val alarmId = chosenHour * 100 + chosenMinute
+                    com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
+                        .scheduleAlarm(
+                            alarmId = 999,
+                            timeInMillis = newAlarmTime,
+                            label = "Test Alarm"
+                        )
+
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -152,6 +171,7 @@ fun AlarmEditScreen(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Preview(device = "id:wearos_small_round", showSystemUi = true)
 @Composable
 fun AlarmEditScreenPreview() {
