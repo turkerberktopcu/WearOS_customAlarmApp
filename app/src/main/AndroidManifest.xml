@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <!-- Declare Wear OS device feature -->
     <uses-feature android:name="android.hardware.type.watch" />
@@ -42,9 +44,9 @@
         <activity
             android:name=".presentation.presentation.AlarmRingActivity"
             android:exported="true"
-            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
             android:turnScreenOn="true"
-            android:excludeFromRecents="true" />
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen"/>
 
         <!-- Alarm Receiver -->
         <receiver
@@ -58,8 +60,5 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
-
-        <!-- You can set the type to ALARM if needed, depending on your use case -->
     </application>
-
 </manifest>

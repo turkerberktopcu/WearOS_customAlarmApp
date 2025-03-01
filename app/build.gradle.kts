@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.material3.android)
     implementation(libs.navigation.compose)
     implementation(libs.navigation.runtime.android)
+    implementation("com.google.android.material:material:1.11.0")
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
