@@ -1,5 +1,7 @@
 package com.turkerberktopcu.customalarmapp.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -15,6 +17,7 @@ sealed class Screen(val route: String) {
     object AlarmSettings : Screen("alarm_settings")
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun WearAppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Screen.AlarmList.route) {
