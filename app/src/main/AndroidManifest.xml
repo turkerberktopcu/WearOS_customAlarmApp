@@ -2,19 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.turkerberktopcu.customalarmapp">
 
-    <!-- Needed for waking the device to ring an alarm -->
+    <!-- Required permissions -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-    <!-- If you plan to schedule exact alarms on Android 12+ -->
-    <!-- <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> -->
-
-    <!-- If you want to handle re-scheduling alarms after reboot -->
-    <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <!-- Declare Wear OS device feature -->
-    <uses-feature
-        android:name="android.hardware.type.watch" />
+    <uses-feature android:name="android.hardware.type.watch" />
 
     <application
         android:allowBackup="true"
@@ -24,15 +20,13 @@
         android:theme="@android:style/Theme.DeviceDefault">
 
         <!-- Let the Play Store know this is a standalone Wear app. -->
-        <uses-library
-            android:name="com.google.android.wearable"
-            android:required="true" />
+        <uses-library android:name="com.google.android.wearable" android:required="true" />
 
         <meta-data
             android:name="com.google.android.wearable.standalone"
             android:value="true" />
 
-        <!-- Your main activity -->
+        <!-- Main Activity -->
         <activity
             android:name=".presentation.presentation.MainActivity"
             android:exported="true"
@@ -44,7 +38,7 @@
             </intent-filter>
         </activity>
 
-        <!-- The activity that appears when the alarm actually rings -->
+        <!-- Alarm Ring Activity -->
         <activity
             android:name=".presentation.presentation.AlarmRingActivity"
             android:exported="true"
@@ -52,12 +46,20 @@
             android:turnScreenOn="true"
             android:excludeFromRecents="true" />
 
-        <!-- The broadcast receiver that AlarmManager calls -->
+        <!-- Alarm Receiver -->
         <receiver
             android:name=".presentation.service.AlarmReceiver"
             android:enabled="true"
             android:exported="true" />
 
+        <!-- Foreground Service for Alarm -->
+        <service
+            android:name=".presentation.service.AlarmForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+
+        <!-- You can set the type to ALARM if needed, depending on your use case -->
     </application>
 
 </manifest>

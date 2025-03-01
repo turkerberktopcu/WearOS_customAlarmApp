@@ -151,7 +151,7 @@ fun AlarmEditScreen(navController: NavController) {
                     if (cal.timeInMillis < System.currentTimeMillis()) {
                         cal.add(java.util.Calendar.DAY_OF_YEAR, 1)
                     }
-                    val newAlarmTime = System.currentTimeMillis() + 60 * 1000  // 1 minute from now
+                    val newAlarmTime = System.currentTimeMillis() + 15 * 1000  // 1 minute from now
 
                     val alarmId = chosenHour * 100 + chosenMinute
                     com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
