@@ -1,9 +1,10 @@
-package com.turkerberktopcu.customalarmapp.presentation.service
+package com.turkerberktopcu.customalarmapp.presentation.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.turkerberktopcu.customalarmapp.presentation.service.AlarmForegroundService
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

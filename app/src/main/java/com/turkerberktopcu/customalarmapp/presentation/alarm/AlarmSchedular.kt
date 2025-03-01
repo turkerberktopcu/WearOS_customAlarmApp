@@ -4,12 +4,21 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.turkerberktopcu.customalarmapp.presentation.service.AlarmReceiver
+import android.os.Build
+import com.turkerberktopcu.customalarmapp.presentation.receivers.AlarmReceiver
 
 class AlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     fun scheduleAlarm(alarmId: Int, triggerAtMillis: Long, label: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val canSchedule = alarmManager.canScheduleExactAlarms()
+            if (!canSchedule) {
+                // Return false to indicate need for permission
+                return
+            }
+        }
+
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("ALARM_ID", alarmId)
             putExtra("ALARM_LABEL", label)

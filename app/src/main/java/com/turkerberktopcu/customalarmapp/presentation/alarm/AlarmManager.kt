@@ -65,7 +65,7 @@ class AlarmManager(private val context: Context) {
         }
     }
 
-    private fun calculateTriggerTime(hour: Int, minute: Int): Long {
+    fun calculateTriggerTime(hour: Int, minute: Int): Long {
         val calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
             set(Calendar.HOUR_OF_DAY, hour)
