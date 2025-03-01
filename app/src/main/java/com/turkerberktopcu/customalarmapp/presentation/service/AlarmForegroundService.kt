@@ -38,18 +38,25 @@ class AlarmForegroundService : Service() {
     }
 
     private fun playAlarmSound() {
-        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build()
-            )
-            setDataSource(this@AlarmForegroundService, alarmUri)
-            isLooping = true
-            prepare()
-            start()
+        try {
+            var alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            if (alarmUri == null) {
+                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            }
+
+            mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .build()
+                )
+                setDataSource(this@AlarmForegroundService, alarmUri)
+                isLooping = true
+                prepareAsync()
+                setOnPreparedListener { start() }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
     private fun checkDrawOverlayPermission() {
@@ -68,16 +75,19 @@ class AlarmForegroundService : Service() {
     private fun buildAlarmNotification(alarmId: Int, alarmLabel: String): Notification {
         val channelId = "alarm_channel_id"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             val channel = NotificationChannel(
                 channelId,
                 "Alarm Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notifications for alarms"
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                setBypassDnd(true)
-                enableLights(true)
+                setSound(alarmUri, AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .build()
+                )
+                vibrationPattern = longArrayOf(0, 100, 200, 300)
                 enableVibration(true)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
             getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         }
@@ -91,7 +101,7 @@ class AlarmForegroundService : Service() {
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
-            0,  // Use 0 to avoid conflicts with multiple alarms
+            alarmId,  // Use 0 to avoid conflicts with multiple alarms
             fullScreenIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT  // Ensure intent updates properly
         )

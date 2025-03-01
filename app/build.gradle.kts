@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-parcelize")
+
 }
 
 android {
@@ -62,6 +64,14 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.navigation.runtime.android)
     implementation("com.google.android.material:material:1.11.0")
+    implementation(libs.room.common)
+    implementation ("com.google.code.gson:gson:2.10.1") // ← Bu satırı ekleyin
+    implementation ("androidx.compose.ui:ui:1.6.2")
+    implementation ("androidx.activity:activity-compose:1.8.2")
+    implementation ("androidx.wear.compose:compose-material:1.3.0")
+    implementation ("androidx.wear.compose:compose-foundation:1.3.0")
+    implementation ("androidx.compose.material:material-icons-core:1.6.2")
+
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)

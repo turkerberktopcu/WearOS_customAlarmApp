@@ -52,7 +52,7 @@
         <receiver
             android:name=".presentation.service.AlarmReceiver"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <!-- Foreground Service for Alarm -->
         <service
