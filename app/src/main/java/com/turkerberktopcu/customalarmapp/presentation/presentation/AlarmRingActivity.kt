@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -114,7 +115,6 @@ class AlarmRingActivity : ComponentActivity() {
         navigateBack()
     }
 }
-
 @Composable
 fun AlarmRingScreen(
     label: String,
@@ -123,44 +123,54 @@ fun AlarmRingScreen(
     onBack: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Back Button at Top-Start
+        // Back Button
         IconButton(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(8.dp)
+                .padding(16.dp) // Increased padding for better touch target
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.onSurface // Theme-adaptive color
             )
         }
 
         // Main Content
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 56.dp), // Space for back button
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+            verticalArrangement = Arrangement.Center // Center content vertically
         ) {
-            Spacer(modifier = Modifier.height(48.dp))  // Space for back button
-            Text(text = label, modifier = Modifier.padding(8.dp))
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleLarge, // Consistent typography
+                modifier = Modifier.padding(8.dp)
+            )
             Button(
                 onClick = onDismiss,
-                modifier = Modifier.width(150.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp) // Full width with padding
             ) {
                 Text(text = "Dismiss")
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Consistent spacing
             Button(
                 onClick = onSnooze,
-                modifier = Modifier.width(150.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp) // Full width with padding
             ) {
                 Text(text = "Snooze")
             }
         }
     }
 }
+
+
