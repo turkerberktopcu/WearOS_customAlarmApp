@@ -37,14 +37,19 @@ fun AlarmListScreen(navController: NavController) {
     val context = LocalContext.current
     val alarmManager = remember { AlarmManager(context) }
     val alarmScheduler = remember { AlarmScheduler(context) }
-    val alarms = remember { mutableStateListOf<Alarm>().apply { addAll(alarmManager.getAllAlarms()) } }
+    val alarms = remember { mutableStateListOf<Alarm>() }
+
+    fun refreshAlarms() {
+        val newAlarms = alarmManager.getAllAlarms().map { it.copy() }
+        alarms.clear()
+        alarms.addAll(newAlarms)
+    }
 
     // Refresh when screen comes into focus
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     LaunchedEffect(navBackStackEntry) {
         if (navBackStackEntry?.destination?.route == Screen.AlarmList.route) {
-            alarms.clear()
-            alarms.addAll(alarmManager.getAllAlarms())
+            refreshAlarms()
         }
     }
 
@@ -53,8 +58,7 @@ fun AlarmListScreen(navController: NavController) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                alarms.clear()
-                alarms.addAll(alarmManager.getAllAlarms())
+                refreshAlarms()
             }
         }
 
@@ -140,8 +144,8 @@ fun AlarmListScreen(navController: NavController) {
                                 } else {
                                     alarmScheduler.cancelAlarm(alarm.id)
                                 }
-                                alarms.clear()
-                                alarms.addAll(alarmManager.getAllAlarms())
+                                // Force refresh after toggle
+                                refreshAlarms()
                             }
                         )
                         IconButton(

@@ -18,6 +18,6 @@ data class Alarm(
 
     // Member function to check if alarm should be disabled after snooze
     fun shouldDisableAfterSnooze(): Boolean {
-        return maxSnoozeCount > 0 && currentSnoozeCount >= maxSnoozeCount
+        return maxSnoozeCount > 0 && currentSnoozeCount > maxSnoozeCount
     }
 }

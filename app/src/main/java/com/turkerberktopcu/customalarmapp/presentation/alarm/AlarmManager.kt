@@ -62,12 +62,21 @@ class AlarmManager(private val context: Context) {
 
     fun handleSnooze(alarmId: Int): Boolean {
         return alarms.find { it.id == alarmId }?.let { alarm ->
-            if (alarm.shouldDisableAfterSnooze()) {
-                false
-            } else {
+            if (alarm.maxSnoozeCount == 0) {
                 alarm.currentSnoozeCount++
                 saveAlarms()
                 true
+            } else {
+                if (alarm.currentSnoozeCount >= alarm.maxSnoozeCount) {
+                    // Disable the alarm when max snoozes reached
+                    alarm.isEnabled = false
+                    saveAlarms()
+                    false
+                } else {
+                    alarm.currentSnoozeCount++
+                    saveAlarms()
+                    true
+                }
             }
         } ?: false
     }

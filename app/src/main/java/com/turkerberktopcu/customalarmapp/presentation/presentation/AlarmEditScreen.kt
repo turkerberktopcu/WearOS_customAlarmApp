@@ -54,7 +54,7 @@ fun AlarmEditScreen(navController: NavController) {
     LaunchedEffect(minutePickerState.selectedOption) {
         selectedMinute = minutes[minutePickerState.selectedOption]
     }
-    val snoozeCounts = (0..10).toList()  // Allow 0-10 snoozes
+    val snoozeCounts = listOf(0) + (1..10).toList() // First item is 0 (unlimited)
     val snoozePickerState = rememberPickerState(snoozeCounts.size)
     var selectedSnoozeCount by remember {
         mutableStateOf(snoozeCounts[snoozePickerState.selectedOption])
@@ -168,7 +168,10 @@ fun AlarmEditScreen(navController: NavController) {
                         modifier = Modifier.size(100.dp, 60.dp)
                     ) {
                         Text(
-                            text = snoozeCounts[it].toString(),
+                            text = when (snoozeCounts[it]) {
+                                0 -> "Unlimited"
+                                else -> snoozeCounts[it].toString()
+                            },
                             style = MaterialTheme.typography.body1
                         )
                     }
