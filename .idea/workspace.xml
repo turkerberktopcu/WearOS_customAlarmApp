@@ -13,7 +13,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

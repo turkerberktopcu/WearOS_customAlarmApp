@@ -12,6 +12,12 @@ data class Alarm(
     var isEnabled: Boolean,
     var timeInMillis: Long,
     var isDailyReset: Boolean = false,
-    var maxSnoozeCount: Int = 0,       // Add these
-    var currentSnoozeCount: Int = 0    // two new properties
-) : Parcelable
+    var maxSnoozeCount: Int = 0,       // Max allowed snoozes
+    var currentSnoozeCount: Int = 0    // Current snooze count
+) : Parcelable {
+
+    // Member function to check if alarm should be disabled after snooze
+    fun shouldDisableAfterSnooze(): Boolean {
+        return maxSnoozeCount > 0 && currentSnoozeCount >= maxSnoozeCount
+    }
+}

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -97,20 +98,14 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun handleSnooze() {
-        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
-        alarm?.let {
-            if (it.currentSnoozeCount >= it.maxSnoozeCount) {
-                // Disable alarm if max snoozes reached
-                alarmManager.toggleAlarm(it.id)
-                alarmScheduler.cancelAlarm(it.id)
-            } else {
-                // Schedule snooze
-                val snoozeMillis = 1 * 10 * 1000
-                val newAlarmTime = System.currentTimeMillis() + snoozeMillis
+        val success = alarmManager.handleSnooze(alarmId)
 
-                alarmManager.incrementSnoozeCount(it.id)
-                alarmScheduler.scheduleAlarm(it.id, newAlarmTime, alarmLabel)
-            }
+        if (success) {
+            val snoozeMillis = 1 * 10 * 1000
+            val newAlarmTime = System.currentTimeMillis() + snoozeMillis
+            alarmScheduler.scheduleAlarm(alarmId, newAlarmTime, alarmLabel)
+        } else {
+            Toast.makeText(this, "Max snooze reached", Toast.LENGTH_SHORT).show()
         }
 
         stopService(Intent(this, AlarmForegroundService::class.java))
