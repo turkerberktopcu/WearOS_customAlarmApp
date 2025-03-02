@@ -21,7 +21,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.wear.compose.material.*
 import com.turkerberktopcu.customalarmapp.presentation.alarm.Alarm
 import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager
@@ -35,6 +39,30 @@ fun AlarmListScreen(navController: NavController) {
     val alarmScheduler = remember { AlarmScheduler(context) }
     val alarms = remember { mutableStateListOf<Alarm>().apply { addAll(alarmManager.getAllAlarms()) } }
 
+    // Refresh when screen comes into focus
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    LaunchedEffect(navBackStackEntry) {
+        if (navBackStackEntry?.destination?.route == Screen.AlarmList.route) {
+            alarms.clear()
+            alarms.addAll(alarmManager.getAllAlarms())
+        }
+    }
+
+    // Refresh when activity resumes
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                alarms.clear()
+                alarms.addAll(alarmManager.getAllAlarms())
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     Scaffold(
         timeText = { TimeText() }
     ) {
