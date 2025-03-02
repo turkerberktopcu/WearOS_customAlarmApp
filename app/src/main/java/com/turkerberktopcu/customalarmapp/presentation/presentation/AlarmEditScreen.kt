@@ -54,6 +54,15 @@ fun AlarmEditScreen(navController: NavController) {
     LaunchedEffect(minutePickerState.selectedOption) {
         selectedMinute = minutes[minutePickerState.selectedOption]
     }
+    val snoozeCounts = (0..10).toList()  // Allow 0-10 snoozes
+    val snoozePickerState = rememberPickerState(snoozeCounts.size)
+    var selectedSnoozeCount by remember {
+        mutableStateOf(snoozeCounts[snoozePickerState.selectedOption])
+    }
+
+    LaunchedEffect(snoozePickerState.selectedOption) {
+        selectedSnoozeCount = snoozeCounts[snoozePickerState.selectedOption]
+    }
 
     Scaffold(
         timeText = { TimeText() }
@@ -147,7 +156,24 @@ fun AlarmEditScreen(navController: NavController) {
                     }
                 }
             }
-
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Max Snoozes:", color = Color.White)
+                    Picker(
+                        state = snoozePickerState,
+                        modifier = Modifier.size(100.dp, 60.dp)
+                    ) {
+                        Text(
+                            text = snoozeCounts[it].toString(),
+                            style = MaterialTheme.typography.body1
+                        )
+                    }
+                }
+            }
             // Custom Input Field
             item {
                 var showDialog by remember { mutableStateOf(false) }
@@ -240,8 +266,10 @@ fun AlarmEditScreen(navController: NavController) {
                             minute = selectedMinute,
                             label = alarmLabel,
                             dailyReset = dailyResetEnabled,
-                            navController = navController
-                        )
+                            navController = navController,
+                            maxSnooze = selectedSnoozeCount,
+
+                            )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -288,9 +316,10 @@ private fun handleAlarmCreation(
     hour: Int,
     minute: Int,
     label: String,
-    dailyReset: Boolean, // Add this parameter
+    dailyReset: Boolean,
+    maxSnooze: Int,  // Add parameter
     navController: NavController
-) {
+)  {
     val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
     val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
 
@@ -306,7 +335,7 @@ private fun handleAlarmCreation(
     val testTriggerTime = System.currentTimeMillis() + 60000 // 15 seconds from now
     Log.d("Test", "Test time: ${testTriggerTime}")
 
-    val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset)
+    val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset, maxSnooze)
     alarmScheduler.scheduleAlarm(newAlarm.id, newAlarm.timeInMillis, newAlarm.label)
     navController.popBackStack()
 }

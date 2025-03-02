@@ -55,6 +55,7 @@ class AlarmRingActivity : ComponentActivity() {
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
 
         alarm?.let {
+            alarmManager.resetSnoozeCount(it.id)  // Reset on dismiss
             if (it.isDailyReset) {
                 // Reschedule for tomorrow at same time
                 val calendar = Calendar.getInstance().apply {
@@ -96,12 +97,26 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun handleSnooze() {
-        val snoozeMillis = 5 * 60 * 1000
-        val newAlarmTime = System.currentTimeMillis() + snoozeMillis
-        AlarmScheduler(this).scheduleAlarm(alarmId, newAlarmTime, alarmLabel)
+        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
+        alarm?.let {
+            if (it.currentSnoozeCount >= it.maxSnoozeCount) {
+                // Disable alarm if max snoozes reached
+                alarmManager.toggleAlarm(it.id)
+                alarmScheduler.cancelAlarm(it.id)
+            } else {
+                // Schedule snooze
+                val snoozeMillis = 1 * 10 * 1000
+                val newAlarmTime = System.currentTimeMillis() + snoozeMillis
+
+                alarmManager.incrementSnoozeCount(it.id)
+                alarmScheduler.scheduleAlarm(it.id, newAlarmTime, alarmLabel)
+            }
+        }
+
         stopService(Intent(this, AlarmForegroundService::class.java))
         finish()
     }
+
 
     private fun navigateBack() {
         startActivity(Intent(this, MainActivity::class.java).apply {

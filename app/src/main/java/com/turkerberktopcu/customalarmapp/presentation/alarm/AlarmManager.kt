@@ -22,7 +22,7 @@ class AlarmManager(private val context: Context) {
 
     fun getAllAlarms(): List<Alarm> = alarms.toList()
 
-    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean): Alarm {
+    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean,maxSnooze: Int): Alarm {
         var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
 
         // Prevent collision with special system alarm IDs
@@ -38,7 +38,10 @@ class AlarmManager(private val context: Context) {
             label = label,
             isEnabled = true,
             timeInMillis = calculateTriggerTime(hour, minute),
-            isDailyReset = isDailyReset // Add this
+            isDailyReset = isDailyReset, // Add this
+            maxSnoozeCount = maxSnooze,
+            currentSnoozeCount = 0
+
         )
         alarms.add(newAlarm)
         saveAlarms()
@@ -49,10 +52,23 @@ class AlarmManager(private val context: Context) {
     fun toggleAlarm(alarmId: Int) {
         alarms.find { it.id == alarmId }?.let { alarm ->
             alarm.isEnabled = !alarm.isEnabled
-            // Refresh trigger time when re-enabling
             if (alarm.isEnabled) {
+                alarm.currentSnoozeCount = 0  // Reset snooze count when re-enabled
                 alarm.timeInMillis = calculateTriggerTime(alarm.hour, alarm.minute)
             }
+            saveAlarms()
+        }
+    }
+    fun incrementSnoozeCount(alarmId: Int) {
+        alarms.find { it.id == alarmId }?.let {
+            it.currentSnoozeCount++
+            saveAlarms()
+        }
+    }
+
+    fun resetSnoozeCount(alarmId: Int) {
+        alarms.find { it.id == alarmId }?.let {
+            it.currentSnoozeCount = 0
             saveAlarms()
         }
     }
