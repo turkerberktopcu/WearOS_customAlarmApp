@@ -7,17 +7,23 @@ import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.wear.compose.material.*
 import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler
@@ -29,6 +35,7 @@ fun AlarmEditScreen(navController: NavController) {
     val context = LocalContext.current
     val alarmManager = remember { com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context) }
     val alarmScheduler = remember { com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context) }
+    var showLabelInput by remember { mutableStateOf(false) }
 
     val hours = (0..23).toList()
     val minutes = (0..59).toList()
@@ -39,7 +46,7 @@ fun AlarmEditScreen(navController: NavController) {
     var selectedHour by remember { mutableStateOf(hours[hourPickerState.selectedOption]) }
     var selectedMinute by remember { mutableStateOf(minutes[minutePickerState.selectedOption]) }
     var alarmLabel by remember { mutableStateOf("") }
-    var dailyResetEnabled by remember { mutableStateOf(false) } // Local state
+    var dailyResetEnabled by remember { mutableStateOf(false) }
 
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHour = hours[hourPickerState.selectedOption]
@@ -51,117 +58,197 @@ fun AlarmEditScreen(navController: NavController) {
     Scaffold(
         timeText = { TimeText() }
     ) {
-        Column(
+        // Add a ScalingLazyColumn for scrollability
+        ScalingLazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(8.dp),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Header Section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Geri",
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "Saat Ayarla",
-                    style = MaterialTheme.typography.title2,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Time Pickers
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    PickerLabel("")
-                    TimePickerSection(
-                        state = hourPickerState,
-                        items = hours,
-                        modifier = Modifier.width(80.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    PickerLabel("")
-                    TimePickerSection(
-                        state = minutePickerState,
-                        items = minutes,
-                        modifier = Modifier.width(80.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Daily Reset Checkbox
+            // Header
+            item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Geri",
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Daily Reset",
-                        modifier = Modifier.weight(1f),
-                        color = Color.White,
-                        style = MaterialTheme.typography.body1
-                    )
-                    Checkbox(
-                        checked = dailyResetEnabled,
-                        onCheckedChange = { enabled ->
-                            dailyResetEnabled = enabled
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Custom Input Field
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .border(1.dp, Color.White, MaterialTheme.shapes.small)
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = alarmLabel.ifEmpty { "Alarm Etiketi" },
-                        color = if (alarmLabel.isEmpty()) Color.Gray else Color.White,
-                        style = MaterialTheme.typography.body1
+                        text = "Saat Ayarla",
+                        style = MaterialTheme.typography.title2,
+                        color = Color.White
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Time Pickers
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    TimePickerSection(
+                        state = hourPickerState,
+                        items = hours,
+                        modifier = Modifier.width(70.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    TimePickerSection(
+                        state = minutePickerState,
+                        items = minutes,
+                        modifier = Modifier.width(70.dp)
+                    )
+                }
+            }
+
+            // Daily Reset Checkbox - Make it more visible
+            item {
+
+                Card(
+                    onClick = { dailyResetEnabled = !dailyResetEnabled },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Daily Reset",
+                            color = Color.White,
+                            style = MaterialTheme.typography.body1
+                        )
+
+                        Checkbox(
+                            checked = dailyResetEnabled,
+                            onCheckedChange = { enabled ->
+                                dailyResetEnabled = enabled
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Custom Input Field
+            item {
+                var showDialog by remember { mutableStateOf(false) }
+
+                // Card that acts as an input field
+                Card(
+                    onClick = { showDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = alarmLabel.ifEmpty { "Alarm Etiketi" },
+                            color = if (alarmLabel.isEmpty()) Color.Gray else Color.White,
+                            style = MaterialTheme.typography.body1
+                        )
+                    }
+                }
+
+                // Custom Dialog for entering the alarm label
+                if (showDialog) {
+                    Dialog(onDismissRequest = { showDialog = false }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+                                .background(Color.Black, shape = RoundedCornerShape(12.dp))
+                                .padding(16.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Alarm Etiketi Girin",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.title2
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // Basic TextField with Wear OS friendly styling
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(1.dp, Color.White, shape = RoundedCornerShape(8.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    BasicTextField(
+                                        value = alarmLabel,
+                                        onValueChange = { alarmLabel = it },
+                                        singleLine = true,
+                                        textStyle = TextStyle(color = Color.White),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Button Row (Cancel & Confirm)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    TextButton(onClick = { showDialog = false }) {
+                                        Text("İptal", color = Color.Gray)
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    TextButton(onClick = { showDialog = false }) {
+                                        Text("Tamam", color = Color.White)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // Action Button
-            Button(onClick = {
-                handleAlarmCreation(
-                    context = context,
-                    hour = selectedHour,
-                    minute = selectedMinute,
-                    label = alarmLabel,
-                    dailyReset = dailyResetEnabled,
-                    navController = navController
-                )
-            }) {
-                Text("Kaydet", color = Color.White)
+            item {
+                Button(
+                    onClick = {
+                        handleAlarmCreation(
+                            context = context,
+                            hour = selectedHour,
+                            minute = selectedMinute,
+                            label = alarmLabel,
+                            dailyReset = dailyResetEnabled,
+                            navController = navController
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text("Kaydet", color = Color.White)
+                }
             }
         }
     }
