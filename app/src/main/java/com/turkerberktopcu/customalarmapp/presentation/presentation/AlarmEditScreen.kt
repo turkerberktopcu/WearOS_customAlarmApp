@@ -39,12 +39,15 @@ fun AlarmEditScreen(navController: NavController) {
     var selectedHour by remember { mutableStateOf(hours[hourPickerState.selectedOption]) }
     var selectedMinute by remember { mutableStateOf(minutes[minutePickerState.selectedOption]) }
     var alarmLabel by remember { mutableStateOf("") }
+    var dailyResetEnabled by remember { mutableStateOf(false) } // Local state
+
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHour = hours[hourPickerState.selectedOption]
     }
     LaunchedEffect(minutePickerState.selectedOption) {
         selectedMinute = minutes[minutePickerState.selectedOption]
     }
+
     Scaffold(
         timeText = { TimeText() }
     ) {
@@ -106,7 +109,28 @@ fun AlarmEditScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Daily Reset Checkbox
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Daily Reset",
+                        modifier = Modifier.weight(1f),
+                        color = Color.White,
+                        style = MaterialTheme.typography.body1
+                    )
+                    Checkbox(
+                        checked = dailyResetEnabled,
+                        onCheckedChange = { enabled ->
+                            dailyResetEnabled = enabled
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Custom Input Field
                 Box(
@@ -127,25 +151,22 @@ fun AlarmEditScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Action Button
-            Button(
-                onClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        handleAlarmCreation(
-                            context = context,
-                            hour = selectedHour,
-                            minute = selectedMinute,
-                            label = alarmLabel,
-                            navController = navController
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Button(onClick = {
+                handleAlarmCreation(
+                    context = context,
+                    hour = selectedHour,
+                    minute = selectedMinute,
+                    label = alarmLabel,
+                    dailyReset = dailyResetEnabled,
+                    navController = navController
+                )
+            }) {
                 Text("Kaydet", color = Color.White)
             }
         }
     }
 }
+
 
 @Composable
 private fun TimePickerSection(
@@ -180,6 +201,7 @@ private fun handleAlarmCreation(
     hour: Int,
     minute: Int,
     label: String,
+    dailyReset: Boolean, // Add this parameter
     navController: NavController
 ) {
     val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
@@ -197,7 +219,7 @@ private fun handleAlarmCreation(
     val testTriggerTime = System.currentTimeMillis() + 60000 // 15 seconds from now
     Log.d("Test", "Test time: ${testTriggerTime}")
 
-    val newAlarm = alarmManager.addAlarm(hour, minute, label)
+    val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset)
     alarmScheduler.scheduleAlarm(newAlarm.id, newAlarm.timeInMillis, newAlarm.label)
     navController.popBackStack()
 }

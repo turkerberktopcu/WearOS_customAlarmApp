@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.turkerberktopcu.customalarmapp.presentation.receivers.AlarmReceiver
+import com.turkerberktopcu.customalarmapp.presentation.utils.Constants
+import java.util.Calendar
 
 class AlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -35,6 +37,29 @@ class AlarmScheduler(private val context: Context) {
             triggerAtMillis,
             pendingIntent
         )
+    }
+
+    fun scheduleDailyReset() {
+        val alarmManager =
+            com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
+        if (!alarmManager.isDailyResetEnabled()) return
+
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+
+        scheduleAlarm(
+            Constants.DAILY_RESET_ALARM_ID,
+            calendar.timeInMillis,
+            "DAILY_RESET"
+        )
+    }
+
+    fun cancelDailyReset() {
+        cancelAlarm(Constants.DAILY_RESET_ALARM_ID)
     }
 
     fun cancelAlarm(alarmId: Int) {

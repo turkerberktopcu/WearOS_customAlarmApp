@@ -10,5 +10,7 @@ data class Alarm(
     val minute: Int,
     val label: String,
     var isEnabled: Boolean,
-    var timeInMillis: Long
+    var timeInMillis: Long,
+    var isDailyReset: Boolean = false // Add this property
+
 ) : Parcelable

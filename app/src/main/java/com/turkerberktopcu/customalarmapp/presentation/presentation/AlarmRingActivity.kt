@@ -21,16 +21,22 @@ import androidx.compose.ui.unit.dp
 import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler
 import com.turkerberktopcu.customalarmapp.presentation.service.AlarmForegroundService
 import com.turkerberktopcu.customalarmapp.presentation.theme.CustomAlarmAppTheme
+import java.util.Calendar
 
 class AlarmRingActivity : ComponentActivity() {
 
     private var alarmId: Int = -1
     private var alarmLabel: String = "Alarm"
+    private lateinit var alarmManager: com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager
+    private lateinit var alarmScheduler: AlarmScheduler
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         alarmId = intent.getIntExtra("ALARM_ID", -1)
         alarmLabel = intent.getStringExtra("ALARM_LABEL") ?: "Alarm"
+        alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
+        alarmScheduler = AlarmScheduler(this)
 
         setupWindowFlags()
         setContent {
@@ -44,7 +50,37 @@ class AlarmRingActivity : ComponentActivity() {
             }
         }
     }
+    private fun handleDismiss() {
+        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
 
+        alarm?.let {
+            if (it.isDailyReset) {
+                // Reschedule for tomorrow at same time
+                val calendar = Calendar.getInstance().apply {
+                    timeInMillis = System.currentTimeMillis()
+                    add(Calendar.DAY_OF_YEAR, 1)
+                    set(Calendar.HOUR_OF_DAY, it.hour)
+                    set(Calendar.MINUTE, it.minute)
+                    set(Calendar.SECOND, 0)
+                }
+
+                alarmManager.apply {
+                    updateAlarmTime(it.id, calendar.timeInMillis)
+                    // Keep enabled and maintain daily reset setting
+                    alarms.find { a -> a.id == it.id }?.isEnabled = true
+                    saveAlarms()
+                }
+                alarmScheduler.scheduleAlarm(it.id, calendar.timeInMillis, it.label)
+            } else {
+                // Disable the alarm
+                alarmManager.toggleAlarm(it.id)
+                alarmScheduler.cancelAlarm(it.id)
+            }
+        }
+
+        stopService(Intent(this, AlarmForegroundService::class.java))
+        finish()
+    }
     private fun setupWindowFlags() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
@@ -56,11 +92,6 @@ class AlarmRingActivity : ComponentActivity() {
                     WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                     WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         )
-    }
-
-    private fun handleDismiss() {
-        stopService(Intent(this, AlarmForegroundService::class.java))
-        finish()
     }
 
     private fun handleSnooze() {
@@ -79,6 +110,7 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     override fun onBackPressed() {
+        super.onBackPressed()
         navigateBack()
     }
 }

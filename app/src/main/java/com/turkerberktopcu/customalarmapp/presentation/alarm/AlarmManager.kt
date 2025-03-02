@@ -4,14 +4,17 @@ import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.turkerberktopcu.customalarmapp.presentation.utils.Constants
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import com.turkerberktopcu.customalarmapp.presentation.utils.Constants.DAILY_RESET_ALARM_ID
+import com.turkerberktopcu.customalarmapp.presentation.utils.Constants.INVALID_ALARM_ID
 
 class AlarmManager(private val context: Context) {
     private val sharedPrefs = context.getSharedPreferences("alarms", Context.MODE_PRIVATE)
     private val gson = Gson()
-    private var alarms = mutableListOf<Alarm>()
+    var alarms = mutableListOf<Alarm>()
 
     init {
         loadAlarms()
@@ -19,15 +22,23 @@ class AlarmManager(private val context: Context) {
 
     fun getAllAlarms(): List<Alarm> = alarms.toList()
 
-    fun addAlarm(hour: Int, minute: Int, label: String): Alarm {
-        val newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
+    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean): Alarm {
+        var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
+
+        // Prevent collision with special system alarm IDs
+        while (newId == DAILY_RESET_ALARM_ID || newId == INVALID_ALARM_ID) {
+            newId++
+            Log.w("ID Generation", "Skipped reserved ID, new ID: $newId")
+        }
+
         val newAlarm = Alarm(
             id = newId,
             hour = hour,
             minute = minute,
             label = label,
             isEnabled = true,
-            timeInMillis = calculateTriggerTime(hour, minute)
+            timeInMillis = calculateTriggerTime(hour, minute),
+            isDailyReset = isDailyReset // Add this
         )
         alarms.add(newAlarm)
         saveAlarms()
@@ -45,13 +56,29 @@ class AlarmManager(private val context: Context) {
             saveAlarms()
         }
     }
+    fun isDailyResetEnabled(): Boolean {
+        return sharedPrefs.getBoolean(Constants.DAILY_RESET_ENABLED_PREF, false)
+    }
 
+    fun setDailyResetEnabled(enabled: Boolean) {
+        sharedPrefs.edit().putBoolean(Constants.DAILY_RESET_ENABLED_PREF, enabled).apply()
+    }
+    fun updateDailyReset(alarmId: Int, isDailyReset: Boolean) {
+        alarms.find { it.id == alarmId }?.isDailyReset = isDailyReset
+        saveAlarms()
+    }
+    fun updateAlarmTime(alarmId: Int, newTime: Long) {
+        alarms.find { it.id == alarmId }?.let {
+            it.timeInMillis = newTime
+            saveAlarms()
+        }
+    }
     fun deleteAlarm(alarmId: Int) {
         alarms.removeAll { it.id == alarmId }
         saveAlarms()
     }
 
-    private fun saveAlarms() {
+    fun saveAlarms() {
         val json = gson.toJson(alarms)
         sharedPrefs.edit().putString("alarms", json).apply()
     }

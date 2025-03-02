@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,10 +20,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.TimeText
+import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager
+import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler
 import com.turkerberktopcu.customalarmapp.presentation.navigation.WearAppNavHost
 import com.turkerberktopcu.customalarmapp.presentation.theme.CustomAlarmAppTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install the splash screen.
         installSplashScreen()
@@ -50,10 +54,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        val alarmManager = AlarmManager(this)
+        val alarmScheduler = AlarmScheduler(this)
 
+        if (alarmManager.isDailyResetEnabled()) {
+            alarmScheduler.scheduleDailyReset()
+        }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun MainActivityPreview() {
