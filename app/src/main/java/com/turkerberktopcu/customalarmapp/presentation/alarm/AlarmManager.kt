@@ -45,7 +45,7 @@ class AlarmManager(private val context: Context) {
             isDailyReset = isDailyReset, // Add this
             maxSnoozeCount = maxSnooze,
             currentSnoozeCount = 0,
-            vibrationPattern = vibrationPattern ?: VibrationPattern.None // Fallback to None
+            vibrationPattern = vibrationPattern ?: VibrationPattern.None // Ensure non-null
 
         )
         alarms.add(newAlarm)

@@ -313,7 +313,7 @@ fun AlarmEditScreen(navController: NavController) {
                             navController = navController,
                             maxSnooze = selectedSnoozeCount,
                             vibrationPattern = selectedVibration
-                            )
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()

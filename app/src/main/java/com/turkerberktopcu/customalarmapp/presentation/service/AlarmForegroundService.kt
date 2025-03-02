@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Vibrator
 import android.provider.Settings
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmRingActivity
@@ -19,6 +18,7 @@ import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmRingAct
 class AlarmForegroundService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
+    private var vibrator: Vibrator? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -28,15 +28,13 @@ class AlarmForegroundService : Service() {
         val alarmLabel = intent?.getStringExtra("ALARM_LABEL") ?: "Alarm"
         val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
-
-        // 1. Start playing alarm sound and vibration
+        // 1. Start playing alarm sound immediately
         playAlarmSound()
         alarm?.let {
             startVibration(it.vibrationPattern)
         }
 
-
-        // 2. Build full-screen notification
+        // 2. Build full-screen notificatFion
         val notification = buildAlarmNotification(alarmId, alarmLabel)
 
         // 3. Start foreground service with the notification
@@ -45,12 +43,11 @@ class AlarmForegroundService : Service() {
         // Do not explicitly start the AlarmRingActivity; let the notification handle it.
         return START_NOT_STICKY
     }
-    fun startVibration(pattern: VibrationPattern?) {
-        Log.d("VibrationTest", "Attempting to vibrate with pattern: $pattern")
-        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        pattern?.getEffect(this)?.let {
+    private fun startVibration(pattern: VibrationPattern?) {
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        pattern?.getEffect(this)?.let { effect ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(it)
+                vibrator?.vibrate(effect)
             }
         }
     }
@@ -90,7 +87,7 @@ class AlarmForegroundService : Service() {
     }
 
     private fun buildAlarmNotification(alarmId: Int, alarmLabel: String): Notification {
-        val channelId = "alarm_channel_id"
+        val channelId = "alarm_channel_id_nosound"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             val channel = NotificationChannel(
@@ -98,10 +95,8 @@ class AlarmForegroundService : Service() {
                 "Alarm Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                setSound(alarmUri, AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .build()
-                )
+                setSound(null, null)
+
                 vibrationPattern = longArrayOf(0, 100, 200, 300)
                 enableVibration(true)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
@@ -154,5 +149,7 @@ class AlarmForegroundService : Service() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        vibrator?.cancel()
+
     }
 }

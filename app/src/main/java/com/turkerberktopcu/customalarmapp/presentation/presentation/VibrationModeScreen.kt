@@ -23,10 +23,7 @@ import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import com.turkerberktopcu.customalarmapp.presentation.getDisplayName
 
 @Composable
-fun VibrationSelectionScreen(
-    navController: NavController,
-    onVibrationSelected: (VibrationPattern) -> Unit
-) {
+fun VibrationSelectionScreen(navController: NavController, onVibrationSelected: (VibrationPattern) -> Unit) {
     val vibrationModes = listOf(
         VibrationPattern.Default,
         VibrationPattern.Short,
@@ -49,11 +46,9 @@ fun VibrationSelectionScreen(
             state = scrollState  // Connect the scroll state to the column
         ) {
             item {
-                Text(
-                    "Select Vibration",
+                Text("Select Vibration",
                     style = MaterialTheme.typography.title2,
-                    modifier = Modifier.padding(8.dp)
-                )
+                    modifier = Modifier.padding(8.dp))
             }
 
             items(vibrationModes) { pattern ->

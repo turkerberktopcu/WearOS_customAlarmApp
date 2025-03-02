@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import kotlinx.parcelize.Parcelize
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 // Alarm.kt
 @Parcelize
@@ -19,7 +20,7 @@ data class Alarm(
     var isDailyReset: Boolean = false,
     var maxSnoozeCount: Int = 0,       // Max allowed snoozes
     var currentSnoozeCount: Int = 0,    // Current snooze count
-    var vibrationPattern: VibrationPattern? = null
+    var vibrationPattern: VibrationPattern = VibrationPattern.None // Non-null with default
 
 ) : Parcelable {
 
@@ -60,32 +61,27 @@ sealed class VibrationPattern : Parcelable {
         }
     }
 }
-
-// Extension function fix
-fun VibrationPattern.getDisplayName(): String {
-    return when (this) {
-        VibrationPattern.Default -> "Default"
-        VibrationPattern.Short -> "Short"
-        VibrationPattern.Long -> "Long"
-        VibrationPattern.Custom -> "Custom"
-        VibrationPattern.None -> "No Vibration"
-    }
-}
-
-// Adapter class fix
-class VibrationPatternAdapter : TypeAdapter<VibrationPattern>() {
-    override fun write(out: JsonWriter, value: VibrationPattern) {
-        out.value(value.name)
+class VibrationPatternAdapter : TypeAdapter<VibrationPattern?>() {
+    override fun write(out: JsonWriter, value: VibrationPattern?) {
+        out.value(value?.name ?: "NONE") // Handle null by writing "NONE"
     }
 
-    override fun read(reader: JsonReader): VibrationPattern {
-        return when (reader.nextString()) {
-            "DEFAULT" -> VibrationPattern.Default
-            "SHORT" -> VibrationPattern.Short
-            "LONG" -> VibrationPattern.Long
-            "CUSTOM" -> VibrationPattern.Custom
-            "NONE" -> VibrationPattern.None
-            else -> VibrationPattern.None
+    override fun read(reader: JsonReader): VibrationPattern? {
+        return when (reader.peek()) {
+            JsonToken.NULL -> {
+                reader.nextNull()
+                VibrationPattern.None // Treat null in JSON as VibrationPattern.None
+            }
+            else -> {
+                when (reader.nextString()) {
+                    "DEFAULT" -> VibrationPattern.Default
+                    "SHORT" -> VibrationPattern.Short
+                    "LONG" -> VibrationPattern.Long
+                    "CUSTOM" -> VibrationPattern.Custom
+                    "NONE" -> VibrationPattern.None
+                    else -> VibrationPattern.None
+                }
+            }
         }
     }
 }

@@ -35,7 +35,6 @@ fun WearAppNavHost(navController: NavHostController = rememberNavController()) {
             VibrationSelectionScreen(
                 navController = navController,
                 onVibrationSelected = { pattern ->
-                    // Get the saved back stack entry
                     navController.previousBackStackEntry
                         ?.savedStateHandle
                         ?.set("selectedVibration", pattern)
