@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.turkerberktopcu.customalarmapp.presentation.AlarmEditScreen
 import com.turkerberktopcu.customalarmapp.presentation.AlarmListScreen
 import com.turkerberktopcu.customalarmapp.presentation.AlarmSettingsScreen
+import com.turkerberktopcu.customalarmapp.presentation.presentation.VibrationSelectionScreen
 
 sealed class Screen(val route: String) {
     object AlarmList : Screen("alarm_list")
@@ -29,6 +30,17 @@ fun WearAppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.AlarmSettings.route) {
             AlarmSettingsScreen(navController = navController)
+        }
+        composable("vibrationSelection") {
+            VibrationSelectionScreen(
+                navController = navController,
+                onVibrationSelected = { pattern ->
+                    // Get the saved back stack entry
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedVibration", pattern)
+                }
+            )
         }
     }
 }

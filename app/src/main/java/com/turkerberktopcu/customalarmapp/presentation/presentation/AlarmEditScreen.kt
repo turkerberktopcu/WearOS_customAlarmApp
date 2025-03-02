@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.wear.compose.material.*
 import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler
+import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import java.util.Calendar
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -47,6 +49,15 @@ fun AlarmEditScreen(navController: NavController) {
     var selectedMinute by remember { mutableStateOf(minutes[minutePickerState.selectedOption]) }
     var alarmLabel by remember { mutableStateOf("") }
     var dailyResetEnabled by remember { mutableStateOf(false) }
+
+    val savedStateHandle = navController.currentBackStackEntry
+        ?.savedStateHandle
+
+    val selectedVibration by savedStateHandle?.getStateFlow<VibrationPattern?>(
+        "selectedVibration",
+        VibrationPattern.None // Set default to None
+    )?.collectAsState() ?: remember { mutableStateOf(VibrationPattern.None) }
+
 
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHour = hours[hourPickerState.selectedOption]
@@ -142,7 +153,7 @@ fun AlarmEditScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Daily Reset",
+                            text = "Günlük Tekrar",
                             color = Color.White,
                             style = MaterialTheme.typography.body1
                         )
@@ -156,20 +167,50 @@ fun AlarmEditScreen(navController: NavController) {
                     }
                 }
             }
+
+            // Add this item to the ScalingLazyColumn
+            item {
+                Card(
+                    onClick = { navController.navigate("vibrationSelection") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = selectedVibration?.let {
+                                it.getDisplayName()
+                            } ?: "Vibration Mode",
+                            color = Color.White
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Select Vibration"
+                        )
+                    }
+                }
+            }
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Max Snoozes:", color = Color.White)
+                    Text("Erteleme Say:", color = Color.White)
                     Picker(
                         state = snoozePickerState,
                         modifier = Modifier.size(100.dp, 60.dp)
                     ) {
                         Text(
                             text = when (snoozeCounts[it]) {
-                                0 -> "Unlimited"
+                                0 -> "Sınırsız"
                                 else -> snoozeCounts[it].toString()
                             },
                             style = MaterialTheme.typography.body1
@@ -271,7 +312,7 @@ fun AlarmEditScreen(navController: NavController) {
                             dailyReset = dailyResetEnabled,
                             navController = navController,
                             maxSnooze = selectedSnoozeCount,
-
+                            vibrationPattern = selectedVibration
                             )
                     },
                     modifier = Modifier
@@ -285,7 +326,16 @@ fun AlarmEditScreen(navController: NavController) {
     }
 }
 
-
+// Extension function for display names
+fun VibrationPattern.getDisplayName(): String {
+    return when (this) {
+        VibrationPattern.Default -> "Default"
+        VibrationPattern.Short -> "Short"
+        VibrationPattern.Long -> "Long"
+        VibrationPattern.Custom -> "Custom"
+        VibrationPattern.None -> "No Vibration"
+    }
+}
 @Composable
 private fun TimePickerSection(
     state: PickerState,
@@ -321,7 +371,9 @@ private fun handleAlarmCreation(
     label: String,
     dailyReset: Boolean,
     maxSnooze: Int,  // Add parameter
-    navController: NavController
+    navController: NavController,
+    vibrationPattern: VibrationPattern?
+
 )  {
     val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
     val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
@@ -338,7 +390,7 @@ private fun handleAlarmCreation(
     val testTriggerTime = System.currentTimeMillis() + 60000 // 15 seconds from now
     Log.d("Test", "Test time: ${testTriggerTime}")
 
-    val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset, maxSnooze)
+    val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset, maxSnooze, vibrationPattern)
     alarmScheduler.scheduleAlarm(newAlarm.id, newAlarm.timeInMillis, newAlarm.label)
     navController.popBackStack()
 }

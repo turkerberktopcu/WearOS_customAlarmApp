@@ -3,6 +3,7 @@ package com.turkerberktopcu.customalarmapp.presentation.alarm
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.turkerberktopcu.customalarmapp.presentation.utils.Constants
 import java.text.SimpleDateFormat
@@ -13,7 +14,9 @@ import com.turkerberktopcu.customalarmapp.presentation.utils.Constants.INVALID_A
 
 class AlarmManager(private val context: Context) {
     private val sharedPrefs = context.getSharedPreferences("alarms", Context.MODE_PRIVATE)
-    private val gson = Gson()
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(VibrationPattern::class.java, VibrationPatternAdapter())
+        .create()
     var alarms = mutableListOf<Alarm>()
 
     init {
@@ -22,7 +25,8 @@ class AlarmManager(private val context: Context) {
 
     fun getAllAlarms(): List<Alarm> = alarms.toList()
 
-    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean,maxSnooze: Int): Alarm {
+    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean,maxSnooze: Int,             vibrationPattern: VibrationPattern?
+    ): Alarm {
         var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
 
         // Prevent collision with special system alarm IDs
@@ -40,7 +44,8 @@ class AlarmManager(private val context: Context) {
             timeInMillis = calculateTriggerTime(hour, minute),
             isDailyReset = isDailyReset, // Add this
             maxSnoozeCount = maxSnooze,
-            currentSnoozeCount = 0
+            currentSnoozeCount = 0,
+            vibrationPattern = vibrationPattern ?: VibrationPattern.None // Fallback to None
 
         )
         alarms.add(newAlarm)
@@ -123,7 +128,8 @@ class AlarmManager(private val context: Context) {
     private fun loadAlarms() {
         val json = sharedPrefs.getString("alarms", null)
         alarms = if (json != null) {
-            gson.fromJson(json, object : TypeToken<List<Alarm>>() {}.type)
+            val type = object : TypeToken<List<Alarm>>() {}.type
+            gson.fromJson(json, type)
         } else {
             mutableListOf()
         }

@@ -9,8 +9,11 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.os.Vibrator
 import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmRingActivity
 
 class AlarmForegroundService : Service() {
@@ -23,9 +26,15 @@ class AlarmForegroundService : Service() {
 
         val alarmId = intent?.getIntExtra("ALARM_ID", -1) ?: -1
         val alarmLabel = intent?.getStringExtra("ALARM_LABEL") ?: "Alarm"
+        val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
+        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
 
-        // 1. Start playing alarm sound immediately
+        // 1. Start playing alarm sound and vibration
         playAlarmSound()
+        alarm?.let {
+            startVibration(it.vibrationPattern)
+        }
+
 
         // 2. Build full-screen notification
         val notification = buildAlarmNotification(alarmId, alarmLabel)
@@ -36,7 +45,15 @@ class AlarmForegroundService : Service() {
         // Do not explicitly start the AlarmRingActivity; let the notification handle it.
         return START_NOT_STICKY
     }
-
+    fun startVibration(pattern: VibrationPattern?) {
+        Log.d("VibrationTest", "Attempting to vibrate with pattern: $pattern")
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        pattern?.getEffect(this)?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(it)
+            }
+        }
+    }
     private fun playAlarmSound() {
         try {
             var alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
