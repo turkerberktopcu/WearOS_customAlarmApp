@@ -108,7 +108,7 @@ fun AlarmListScreen(navController: NavController) {
             // Alarm List Items
             items(alarms, key = { it.id }) { alarm ->
                 Card(
-                    onClick = { },
+                    onClick = { navController.navigate("alarm_edit?alarmId=${alarm.id}") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)

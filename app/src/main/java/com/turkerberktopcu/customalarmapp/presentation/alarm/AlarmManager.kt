@@ -154,4 +154,13 @@ class AlarmManager(private val context: Context) {
 
         return calendar.timeInMillis
     }
+
+    // In AlarmManager.kt
+    fun updateAlarm(updatedAlarm: Alarm) {
+        val index = alarms.indexOfFirst { it.id == updatedAlarm.id }
+        if (index != -1) {
+            alarms[index] = updatedAlarm
+            saveAlarms()
+        }
+    }
 }
