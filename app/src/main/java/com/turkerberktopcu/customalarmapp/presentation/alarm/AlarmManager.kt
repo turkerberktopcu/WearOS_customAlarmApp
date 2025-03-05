@@ -25,7 +25,14 @@ class AlarmManager(private val context: Context) {
 
     fun getAllAlarms(): List<Alarm> = alarms.toList()
 
-    fun addAlarm(hour: Int, minute: Int, label: String, isDailyReset: Boolean,maxSnooze: Int,             vibrationPattern: VibrationPattern?
+    fun addAlarm(
+        hour: Int,
+        minute: Int,
+        label: String,
+        isDailyReset: Boolean,
+        maxSnooze: Int,
+        vibrationPattern: VibrationPattern?,
+        snoozeInterval: Long  // New parameter
     ): Alarm {
         var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
 
@@ -42,16 +49,17 @@ class AlarmManager(private val context: Context) {
             label = label,
             isEnabled = true,
             timeInMillis = calculateTriggerTime(hour, minute),
-            isDailyReset = isDailyReset, // Add this
+            isDailyReset = isDailyReset,
             maxSnoozeCount = maxSnooze,
             currentSnoozeCount = 0,
-            vibrationPattern = vibrationPattern ?: VibrationPattern.None // Ensure non-null
-
+            vibrationPattern = vibrationPattern ?: VibrationPattern.None,
+            snoozeIntervalMillis = snoozeInterval
         )
         alarms.add(newAlarm)
         saveAlarms()
         return newAlarm
     }
+
 
     // In AlarmManager.kt
     fun toggleAlarm(alarmId: Int) {

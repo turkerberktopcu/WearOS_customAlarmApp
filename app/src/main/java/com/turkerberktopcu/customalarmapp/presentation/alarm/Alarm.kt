@@ -20,7 +20,8 @@ data class Alarm(
     var isDailyReset: Boolean = false,
     var maxSnoozeCount: Int = 0,       // Max allowed snoozes
     var currentSnoozeCount: Int = 0,    // Current snooze count
-    var vibrationPattern: VibrationPattern = VibrationPattern.None // Non-null with default
+    var vibrationPattern: VibrationPattern = VibrationPattern.None, // Non-null with default
+    var snoozeIntervalMillis: Long = 180_000L  // Default snooze interval (3 minutes)
 
 ) : Parcelable {
 

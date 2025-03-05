@@ -68,6 +68,15 @@ fun AlarmEditScreen(navController: NavController) {
     var alarmLabel by remember { mutableStateOf(alarm?.label ?: "") }
     var dailyResetEnabled by remember { mutableStateOf(alarm?.isDailyReset ?: false) }
     var selectedSnoozeCount by remember { mutableStateOf(alarm?.maxSnoozeCount ?: snoozeCounts[snoozePickerState.selectedOption]) }
+    val snoozeIntervalOptions = (1..60).toList()
+// Initialize picker state; if editing an existing alarm, convert from millis to seconds
+    val snoozeIntervalPickerState = rememberPickerState(
+        snoozeIntervalOptions.size,
+        initiallySelectedOption = alarm?.snoozeIntervalMillis?.div(60000)?.toInt() ?: 0
+    )
+    var selectedSnoozeIntervalSeconds by remember {
+        mutableStateOf(snoozeIntervalOptions[snoozeIntervalPickerState.selectedOption])
+    }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val selectedVibration by savedStateHandle?.getStateFlow<VibrationPattern?>(
@@ -81,7 +90,10 @@ fun AlarmEditScreen(navController: NavController) {
             savedStateHandle?.set("selectedVibration", alarm.vibrationPattern)
         }
     }
-
+// Update the state when the picker selection changes
+    LaunchedEffect(snoozeIntervalPickerState.selectedOption) {
+        selectedSnoozeIntervalSeconds = snoozeIntervalOptions[snoozeIntervalPickerState.selectedOption]
+    }
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHour = hours[hourPickerState.selectedOption]
     }
@@ -222,6 +234,24 @@ fun AlarmEditScreen(navController: NavController) {
                     }
                 }
             }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Erteleme Aralığı (sn):", color = Color.White)
+                    Picker(
+                        state = snoozeIntervalPickerState,
+                        modifier = Modifier.size(100.dp, 60.dp)
+                    ) {
+                        Text(
+                            text = "${snoozeIntervalOptions[it]}",
+                            style = MaterialTheme.typography.body1
+                        )
+                    }
+                }
+            }
 
             item {
                 var showDialog by remember { mutableStateOf(false) }
@@ -304,7 +334,8 @@ fun AlarmEditScreen(navController: NavController) {
                             maxSnooze = selectedSnoozeCount,
                             vibrationPattern = selectedVibration,
                             alarm = alarm, // Pass the loaded alarm
-                            navController = navController
+                            navController = navController,
+                            selectedSnoozeIntervalSeconds = selectedSnoozeIntervalSeconds
                         )
                     },
                     modifier = Modifier
@@ -364,8 +395,9 @@ private fun handleAlarmSave(
     dailyReset: Boolean,
     maxSnooze: Int,
     vibrationPattern: VibrationPattern?,
-    alarm: Alarm?, // Add parameter to determine if editing
-    navController: NavController
+    alarm: Alarm?, // Determines if editing or adding
+    navController: NavController,
+    selectedSnoozeIntervalSeconds: Int  // New parameter
 ) {
     val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
     val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
@@ -388,7 +420,8 @@ private fun handleAlarmSave(
             isDailyReset = dailyReset,
             maxSnoozeCount = maxSnooze,
             vibrationPattern = vibrationPattern ?: VibrationPattern.None,
-            timeInMillis = alarmManager.calculateTriggerTime(hour, minute)
+            timeInMillis = alarmManager.calculateTriggerTime(hour, minute),
+            snoozeIntervalMillis = selectedSnoozeIntervalSeconds * 60_000L
         )
         alarmManager.updateAlarm(updatedAlarm)
         if (updatedAlarm.isEnabled) {
@@ -397,7 +430,15 @@ private fun handleAlarmSave(
         }
     } else {
         // Add new alarm
-        val newAlarm = alarmManager.addAlarm(hour, minute, label, dailyReset, maxSnooze, vibrationPattern)
+        val newAlarm = alarmManager.addAlarm(
+            hour,
+            minute,
+            label,
+            dailyReset,
+            maxSnooze,
+            vibrationPattern,
+            selectedSnoozeIntervalSeconds * 60_000L
+        )
         alarmScheduler.scheduleAlarm(newAlarm.id, newAlarm.timeInMillis, newAlarm.label)
     }
     navController.popBackStack()

@@ -10,20 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6cd17522-87a9-4b00-afdf-336d5bb3ad6b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmListScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmListScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/navigation/WearAppNavHost.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/navigation/WearAppNavHost.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-hdpi/ic_launcher.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-mdpi/ic_launcher.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,13 +63,13 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;ScreenRecorder.SavePath&quot;: &quot;C:\\&quot;,
+    &quot;ScreenRecorder.SavePath&quot;: &quot;D:\\&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }

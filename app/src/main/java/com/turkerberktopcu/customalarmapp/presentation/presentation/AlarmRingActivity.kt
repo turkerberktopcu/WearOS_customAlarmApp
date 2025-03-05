@@ -98,10 +98,12 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun handleSnooze() {
+        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
         val success = alarmManager.handleSnooze(alarmId)
 
-        if (success) {
-            val snoozeMillis = 1 * 10 * 1000
+        if (success && alarm != null) {
+            // Use the alarm's saved snooze interval (in millis)
+            val snoozeMillis = alarm.snoozeIntervalMillis
             val newAlarmTime = System.currentTimeMillis() + snoozeMillis
             alarmScheduler.scheduleAlarm(alarmId, newAlarmTime, alarmLabel)
         } else {
@@ -111,6 +113,7 @@ class AlarmRingActivity : ComponentActivity() {
         stopService(Intent(this, AlarmForegroundService::class.java))
         finish()
     }
+
 
 
     private fun navigateBack() {
