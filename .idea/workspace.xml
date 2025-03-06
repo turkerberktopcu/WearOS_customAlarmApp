@@ -13,12 +13,12 @@
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.6/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/Alarm.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/alarm/AlarmManager.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmEditScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/presentation/AlarmRingActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/service/AlarmForegroundService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/turkerberktopcu/customalarmapp/presentation/service/AlarmForegroundService.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

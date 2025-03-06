@@ -69,13 +69,42 @@ fun AlarmEditScreen(navController: NavController) {
     var dailyResetEnabled by remember { mutableStateOf(alarm?.isDailyReset ?: false) }
     var selectedSnoozeCount by remember { mutableStateOf(alarm?.maxSnoozeCount ?: snoozeCounts[snoozePickerState.selectedOption]) }
     val snoozeIntervalOptions = (1..60).toList()
-// Initialize picker state; if editing an existing alarm, convert from millis to seconds
+// Initialize picker state; if editing an existing alarm, convert from millis to minutes
     val snoozeIntervalPickerState = rememberPickerState(
         snoozeIntervalOptions.size,
-        initiallySelectedOption = alarm?.snoozeIntervalMillis?.div(60000)?.toInt() ?: 0
+        initiallySelectedOption = ((alarm?.snoozeIntervalMillis?.div(60000)?.toInt() ?: 1) - 1)
     )
-    var selectedSnoozeIntervalSeconds by remember {
+    var selectedSnoozeIntervalMinutes by remember {
         mutableStateOf(snoozeIntervalOptions[snoozeIntervalPickerState.selectedOption])
+    }
+    LaunchedEffect(snoozeIntervalPickerState.selectedOption) {
+        selectedSnoozeIntervalMinutes = snoozeIntervalOptions[snoozeIntervalPickerState.selectedOption]
+    }
+
+// Çalışma süresi picker (dakika cinsinden 1-60; varsayılan 5 dk için index=4)
+    val workingDurationOptions = (1..60).toList()
+    val workingDurationPickerState = rememberPickerState(
+        workingDurationOptions.size,
+        initiallySelectedOption = ((alarm?.workingDurationMillis?.div(60000)?.toInt() ?: 5) - 1)
+    )
+    var selectedWorkingDurationMinutes by remember {
+        mutableStateOf(workingDurationOptions[workingDurationPickerState.selectedOption])
+    }
+    LaunchedEffect(workingDurationPickerState.selectedOption) {
+        selectedWorkingDurationMinutes = workingDurationOptions[workingDurationPickerState.selectedOption]
+    }
+
+    // Ara süresi picker (dakika cinsinden 1-60; varsayılan 2 dk için index=1)
+    val breakDurationOptions = (1..60).toList()
+    val breakDurationPickerState = rememberPickerState(
+        breakDurationOptions.size,
+        initiallySelectedOption = ((alarm?.breakDurationMillis?.div(60000)?.toInt() ?: 2) - 1)
+    )
+    var selectedBreakDurationMinutes by remember {
+        mutableStateOf(breakDurationOptions[breakDurationPickerState.selectedOption])
+    }
+    LaunchedEffect(breakDurationPickerState.selectedOption) {
+        selectedBreakDurationMinutes = breakDurationOptions[breakDurationPickerState.selectedOption]
     }
 
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -90,10 +119,7 @@ fun AlarmEditScreen(navController: NavController) {
             savedStateHandle?.set("selectedVibration", alarm.vibrationPattern)
         }
     }
-// Update the state when the picker selection changes
-    LaunchedEffect(snoozeIntervalPickerState.selectedOption) {
-        selectedSnoozeIntervalSeconds = snoozeIntervalOptions[snoozeIntervalPickerState.selectedOption]
-    }
+
     LaunchedEffect(hourPickerState.selectedOption) {
         selectedHour = hours[hourPickerState.selectedOption]
     }
@@ -114,6 +140,8 @@ fun AlarmEditScreen(navController: NavController) {
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -137,7 +165,39 @@ fun AlarmEditScreen(navController: NavController) {
                     )
                 }
             }
+            // Çalışma Süresi Picker'ı (dk)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Çalışma Süresi(dk):", color = Color.White)
+                    Picker(
+                        state = workingDurationPickerState,
+                        modifier = Modifier.size(100.dp, 60.dp)
+                    ) {
+                        Text(text = "${workingDurationOptions[it]}", style = MaterialTheme.typography.body1)
+                    }
+                }
+            }
 
+// Ara Süresi Picker'ı (dk)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Çalışma Arası(dk):", color = Color.White)
+                    Picker(
+                        state = breakDurationPickerState,
+                        modifier = Modifier.size(100.dp, 60.dp)
+                    ) {
+                        Text(text = "${breakDurationOptions[it]}", style = MaterialTheme.typography.body1)
+                    }
+                }
+            }
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -240,7 +300,7 @@ fun AlarmEditScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Erteleme Aralığı (sn):", color = Color.White)
+                    Text("Erteleme Aralığı(dk):", color = Color.White)
                     Picker(
                         state = snoozeIntervalPickerState,
                         modifier = Modifier.size(100.dp, 60.dp)
@@ -252,6 +312,8 @@ fun AlarmEditScreen(navController: NavController) {
                     }
                 }
             }
+
+
 
             item {
                 var showDialog by remember { mutableStateOf(false) }
@@ -333,17 +395,19 @@ fun AlarmEditScreen(navController: NavController) {
                             dailyReset = dailyResetEnabled,
                             maxSnooze = selectedSnoozeCount,
                             vibrationPattern = selectedVibration,
-                            alarm = alarm, // Pass the loaded alarm
+                            alarm = alarm,
                             navController = navController,
-                            selectedSnoozeIntervalSeconds = selectedSnoozeIntervalSeconds
+                            selectedSnoozeIntervalMinutes = selectedSnoozeIntervalMinutes,
+                            selectedWorkingDurationMinutes = selectedWorkingDurationMinutes,
+                            selectedBreakDurationMinutes = selectedBreakDurationMinutes
                         )
+
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                 ) {
                     Text("Kaydet", color = Color.White)
                 }
+
             }
         }
     }
@@ -395,9 +459,11 @@ private fun handleAlarmSave(
     dailyReset: Boolean,
     maxSnooze: Int,
     vibrationPattern: VibrationPattern?,
-    alarm: Alarm?, // Determines if editing or adding
+    alarm: Alarm?, // Düzenleme veya ekleme durumu
     navController: NavController,
-    selectedSnoozeIntervalSeconds: Int  // New parameter
+    selectedSnoozeIntervalMinutes: Int,
+    selectedWorkingDurationMinutes: Int,
+    selectedBreakDurationMinutes: Int
 ) {
     val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(context)
     val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
@@ -412,7 +478,7 @@ private fun handleAlarmSave(
     }
 
     if (alarm != null) {
-        // Update existing alarm
+        // Güncelleme işlemi
         val updatedAlarm = alarm.copy(
             hour = hour,
             minute = minute,
@@ -421,7 +487,9 @@ private fun handleAlarmSave(
             maxSnoozeCount = maxSnooze,
             vibrationPattern = vibrationPattern ?: VibrationPattern.None,
             timeInMillis = alarmManager.calculateTriggerTime(hour, minute),
-            snoozeIntervalMillis = selectedSnoozeIntervalSeconds * 60_000L
+            snoozeIntervalMillis = selectedSnoozeIntervalMinutes * 60_000L,
+            workingDurationMillis = selectedWorkingDurationMinutes * 60_000L,
+            breakDurationMillis = selectedBreakDurationMinutes * 60_000L
         )
         alarmManager.updateAlarm(updatedAlarm)
         if (updatedAlarm.isEnabled) {
@@ -429,7 +497,7 @@ private fun handleAlarmSave(
             alarmScheduler.scheduleAlarm(updatedAlarm.id, updatedAlarm.timeInMillis, updatedAlarm.label)
         }
     } else {
-        // Add new alarm
+        // Yeni alarm ekleme işlemi
         val newAlarm = alarmManager.addAlarm(
             hour,
             minute,
@@ -437,7 +505,9 @@ private fun handleAlarmSave(
             dailyReset,
             maxSnooze,
             vibrationPattern,
-            selectedSnoozeIntervalSeconds * 60_000L
+            selectedSnoozeIntervalMinutes * 60_000L,
+            selectedWorkingDurationMinutes * 60_000L,
+            selectedBreakDurationMinutes * 60_000L
         )
         alarmScheduler.scheduleAlarm(newAlarm.id, newAlarm.timeInMillis, newAlarm.label)
     }

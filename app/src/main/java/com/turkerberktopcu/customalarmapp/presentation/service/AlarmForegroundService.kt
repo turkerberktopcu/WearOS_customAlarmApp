@@ -14,6 +14,10 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmRingActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AlarmForegroundService : Service() {
 
@@ -23,26 +27,47 @@ class AlarmForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         val alarmId = intent?.getIntExtra("ALARM_ID", -1) ?: -1
         val alarmLabel = intent?.getStringExtra("ALARM_LABEL") ?: "Alarm"
-        val alarmManager = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
-        val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
-        // 1. Start playing alarm sound immediately
+        val alarmManagerInstance = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
+        val alarm = alarmManagerInstance.getAllAlarms().find { it.id == alarmId }
+
+        // Start alarm sound and vibration as usual
         playAlarmSound()
         alarm?.let {
             startVibration(it.vibrationPattern)
         }
 
-        // 2. Build full-screen notificatFion
+        // Build and start foreground notification as usual
         val notification = buildAlarmNotification(alarmId, alarmLabel)
-
-        // 3. Start foreground service with the notification
         startForeground(alarmId, notification)
 
-        // Do not explicitly start the AlarmRingActivity; let the notification handle it.
+        // Auto-snooze: after workingDuration (e.g., 5 minutes), trigger snooze automatically
+        // Use a coroutine for the delay
+        alarm?.let { currentAlarm ->
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(currentAlarm.workingDurationMillis)
+                autoSnooze(alarmId, alarmLabel, currentAlarm.breakDurationMillis)
+            }
+        }
+
         return START_NOT_STICKY
     }
+    private fun autoSnooze(alarmId: Int, alarmLabel: String, breakDurationMillis: Long) {
+        val alarmManagerInstance = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager(this)
+        val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(this)
+        val alarm = alarmManagerInstance.getAllAlarms().find { it.id == alarmId }
+        if (alarm != null) {
+            val success = alarmManagerInstance.handleSnooze(alarmId)
+            if (success) {
+                val newAlarmTime = System.currentTimeMillis() + breakDurationMillis
+                alarmScheduler.scheduleAlarm(alarmId, newAlarmTime, alarmLabel)
+            }
+        }
+        stopForeground(true)
+        stopSelf()
+    }
+
     private fun startVibration(pattern: VibrationPattern?) {
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         pattern?.getEffect(this)?.let { effect ->

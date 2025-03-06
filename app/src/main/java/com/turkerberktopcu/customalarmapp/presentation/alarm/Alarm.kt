@@ -18,18 +18,18 @@ data class Alarm(
     var isEnabled: Boolean,
     var timeInMillis: Long,
     var isDailyReset: Boolean = false,
-    var maxSnoozeCount: Int = 0,       // Max allowed snoozes
-    var currentSnoozeCount: Int = 0,    // Current snooze count
-    var vibrationPattern: VibrationPattern = VibrationPattern.None, // Non-null with default
-    var snoozeIntervalMillis: Long = 180_000L  // Default snooze interval (3 minutes)
-
+    var maxSnoozeCount: Int = 0,
+    var currentSnoozeCount: Int = 0,
+    var vibrationPattern: VibrationPattern = VibrationPattern.None,
+    var snoozeIntervalMillis: Long = 180_000L,  // 3 dk erteleme süresi
+    var workingDurationMillis: Long = 300_000L,   // Alarmın aktif kalacağı süre (5 dk)
+    var breakDurationMillis: Long = 120_000L      // Alarmın tekrar çalmadan önce ara süresi (2 dk)
 ) : Parcelable {
-
-    // Member function to check if alarm should be disabled after snooze
     fun shouldDisableAfterSnooze(): Boolean {
         return maxSnoozeCount > 0 && currentSnoozeCount > maxSnoozeCount
     }
 }
+
 // VibrationPattern.kt
 @Parcelize
 sealed class VibrationPattern : Parcelable {

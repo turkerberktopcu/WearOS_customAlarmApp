@@ -32,11 +32,12 @@ class AlarmManager(private val context: Context) {
         isDailyReset: Boolean,
         maxSnooze: Int,
         vibrationPattern: VibrationPattern?,
-        snoozeInterval: Long  // New parameter
+        snoozeInterval: Long,
+        workingDuration: Long,
+        breakDuration: Long
     ): Alarm {
         var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
 
-        // Prevent collision with special system alarm IDs
         while (newId == DAILY_RESET_ALARM_ID || newId == INVALID_ALARM_ID) {
             newId++
             Log.w("ID Generation", "Skipped reserved ID, new ID: $newId")
@@ -53,7 +54,9 @@ class AlarmManager(private val context: Context) {
             maxSnoozeCount = maxSnooze,
             currentSnoozeCount = 0,
             vibrationPattern = vibrationPattern ?: VibrationPattern.None,
-            snoozeIntervalMillis = snoozeInterval
+            snoozeIntervalMillis = snoozeInterval,
+            workingDurationMillis = workingDuration,
+            breakDurationMillis = breakDuration
         )
         alarms.add(newAlarm)
         saveAlarms()
