@@ -7,6 +7,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -156,7 +157,6 @@ class AlarmRingActivity : ComponentActivity() {
         navigateBack()
     }
 }
-
 @Composable
 fun AlarmRingScreen(
     label: String,
@@ -164,55 +164,106 @@ fun AlarmRingScreen(
     onSnooze: () -> Unit,
     onBack: () -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Back Button
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp) // Increased padding for better touch target
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onSurface // Theme-adaptive color
-            )
-        }
+    // Import the Wear Compose MaterialTheme
+    val wearMaterialTheme = androidx.wear.compose.material.MaterialTheme
 
-        // Main Content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 56.dp), // Space for back button
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Center content vertically
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        androidx.wear.compose.material.Scaffold(
+            timeText = { /* Remove TimeText to save space */ }
         ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleLarge, // Consistent typography
-                modifier = Modifier.padding(8.dp)
-            )
-            Button(
-                onClick = onDismiss,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp) // Full width with padding
+                    .fillMaxSize()
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween // Distribute space evenly
             ) {
-                Text(text = "Dismiss")
-            }
-            Spacer(modifier = Modifier.height(16.dp)) // Consistent spacing
-            Button(
-                onClick = onSnooze,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp) // Full width with padding
-            ) {
-                Text(text = "Snooze")
+                // Compact header with small back button and minimal label
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.size(28.dp) // Even smaller back button
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Geri",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(2.dp))
+                    androidx.wear.compose.material.Text(
+                        text = label,
+                        style = wearMaterialTheme.typography.caption1, // Much smaller title
+                        color = Color.White
+                    )
+                }
+
+                // Display current time
+                val calendar = Calendar.getInstance()
+                val hour = calendar.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0')
+                val minute = calendar.get(Calendar.MINUTE).toString().padStart(2, '0')
+
+                androidx.wear.compose.material.Text(
+                    text = "$hour:$minute",
+                    color = Color.White,
+                    style = wearMaterialTheme.typography.display1 // Smaller time display
+                )
+
+                // Action buttons in a more compact arrangement
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    // Dismiss button
+                    androidx.wear.compose.material.Button(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f) // Even narrower button
+                            .height(36.dp), // Fixed height for smaller button
+                        colors = androidx.wear.compose.material.ButtonDefaults.buttonColors(
+                            backgroundColor = androidx.wear.compose.material.MaterialTheme.colors.primary
+                        )
+                    ) {
+                        androidx.wear.compose.material.Text(
+                            "Kapat",
+                            color = Color.Black,
+                            style = wearMaterialTheme.typography.button
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Snooze button
+                    androidx.wear.compose.material.Button(
+                        onClick = onSnooze,
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f) // Even narrower button
+                            .height(36.dp), // Fixed height for smaller button
+                        colors = androidx.wear.compose.material.ButtonDefaults.buttonColors(
+                            backgroundColor = androidx.wear.compose.material.MaterialTheme.colors.secondary
+                        )
+                    ) {
+                        androidx.wear.compose.material.Text(
+                            "Ertele",
+                            color = Color.Black,
+                            style = wearMaterialTheme.typography.button
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-
