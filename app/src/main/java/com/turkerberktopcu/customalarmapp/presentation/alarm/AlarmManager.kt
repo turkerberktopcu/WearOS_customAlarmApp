@@ -34,7 +34,8 @@ class AlarmManager(private val context: Context) {
         vibrationPattern: VibrationPattern?,
         snoozeInterval: Long,
         workingDuration: Long,
-        breakDuration: Long
+        breakDuration: Long,
+        alarmSoundUri: String? // New parameter for alarm sound
     ): Alarm {
         var newId = if (alarms.isEmpty()) 1 else alarms.maxOf { it.id } + 1
 
@@ -56,12 +57,14 @@ class AlarmManager(private val context: Context) {
             vibrationPattern = vibrationPattern ?: VibrationPattern.None,
             snoozeIntervalMillis = snoozeInterval,
             workingDurationMillis = workingDuration,
-            breakDurationMillis = breakDuration
+            breakDurationMillis = breakDuration,
+            alarmSoundUri = alarmSoundUri
         )
         alarms.add(newAlarm)
         saveAlarms()
         return newAlarm
     }
+
 
 
     // In AlarmManager.kt

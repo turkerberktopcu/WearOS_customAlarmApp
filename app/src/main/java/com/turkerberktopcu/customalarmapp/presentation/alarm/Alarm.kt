@@ -1,6 +1,7 @@
 package com.turkerberktopcu.customalarmapp.presentation.alarm
 
 import android.content.Context
+import android.media.RingtoneManager
 import android.os.Parcelable
 import android.os.VibrationEffect
 import kotlinx.parcelize.Parcelize
@@ -21,14 +22,12 @@ data class Alarm(
     var maxSnoozeCount: Int = 0,
     var currentSnoozeCount: Int = 0,
     var vibrationPattern: VibrationPattern = VibrationPattern.None,
-    var snoozeIntervalMillis: Long = 180_000L,  // 3 dk erteleme süresi
-    var workingDurationMillis: Long = 300_000L,   // Alarmın aktif kalacağı süre (5 dk)
-    var breakDurationMillis: Long = 120_000L      // Alarmın tekrar çalmadan önce ara süresi (2 dk)
-) : Parcelable {
-    fun shouldDisableAfterSnooze(): Boolean {
-        return maxSnoozeCount > 0 && currentSnoozeCount > maxSnoozeCount
-    }
-}
+    var snoozeIntervalMillis: Long = 180_000L,  // 3-minute snooze interval
+    var workingDurationMillis: Long = 300_000L,   // 5-minute working duration
+    var breakDurationMillis: Long = 120_000L,       // 2-minute break duration
+    var alarmSoundUri: String? = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)?.toString() // Default alarm sound
+) : Parcelable
+
 
 // VibrationPattern.kt
 @Parcelize

@@ -12,6 +12,7 @@ import android.os.IBinder
 import android.os.Vibrator
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
+import com.turkerberktopcu.customalarmapp.presentation.alarm.Alarm
 import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
 import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmRingActivity
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +34,7 @@ class AlarmForegroundService : Service() {
         val alarm = alarmManagerInstance.getAllAlarms().find { it.id == alarmId }
 
         // Start alarm sound and vibration as usual
-        playAlarmSound()
+        playAlarmSound(alarm)
         alarm?.let {
             startVibration(it.vibrationPattern)
         }
@@ -76,12 +77,16 @@ class AlarmForegroundService : Service() {
             }
         }
     }
-    private fun playAlarmSound() {
+    private fun playAlarmSound(alarm: Alarm?) {
         try {
-            var alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            if (alarmUri == null) {
-                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            // Check if the user selected "No Sound" (using a special marker, e.g., "NO_SOUND")
+            if (alarm?.alarmSoundUri == "NO_SOUND") {
+                return // Do not play any sound
             }
+
+            // Otherwise, use the selected sound if available.
+            val alarmUri = alarm?.alarmSoundUri?.let { Uri.parse(it) }
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
 
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
@@ -98,6 +103,7 @@ class AlarmForegroundService : Service() {
             e.printStackTrace()
         }
     }
+
     private fun checkDrawOverlayPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
