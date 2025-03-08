@@ -1,34 +1,37 @@
 package com.turkerberktopcu.customalarmapp.presentation.presentation
 
 import android.media.RingtoneManager
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.wear.compose.material.Card
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
+import androidx.wear.compose.material.ScalingLazyColumn
+import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.items
+import androidx.wear.compose.material.rememberScalingLazyListState
+
 @Composable
 fun AlarmSoundSelectionScreen(
     navController: NavController,
     onSoundSelected: (String) -> Unit
 ) {
     val context = LocalContext.current
+    val scrollState = rememberScalingLazyListState()
+
     val ringtoneManager = RingtoneManager(context).apply {
         setType(RingtoneManager.TYPE_ALARM)
     }
@@ -45,36 +48,57 @@ fun AlarmSoundSelectionScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Select Alarm Sound") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+        timeText = { TimeText() },
+        positionIndicator = {
+            PositionIndicator(
+                scalingLazyListState = scrollState
             )
         }
-    ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(alarmSounds) { sound ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            // Use the callback to pass back the selected sound
-                            onSoundSelected(sound.second)
-                            // Then pop back to the previous screen
-                            navController.popBackStack()
-                        }
-                ) {
-                    Text(
-                        text = sound.first,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+    ) {
+        ScalingLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = scrollState
+        ) {
+            item {
+                Text(
+                    "Select Sound",
+                    style = MaterialTheme.typography.title2,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
+
+            items(alarmSounds) { sound ->
+                AlarmSoundItem(
+                    title = sound.first,
+                    onClick = {
+                        onSoundSelected(sound.second)
+                        navController.popBackStack()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AlarmSoundItem(title: String, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.body1,
+                color = Color.White
+            )
         }
     }
 }
