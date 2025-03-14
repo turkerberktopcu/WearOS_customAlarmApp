@@ -25,6 +25,11 @@ class AlarmManager(private val context: Context) {
 
     fun getAllAlarms(): List<Alarm> = alarms.toList()
 
+    // Public method to reload alarms from shared preferences
+    fun reloadAlarms() {
+        loadAlarms()
+    }
+
     fun addAlarm(
         hour: Int,
         minute: Int,
@@ -65,9 +70,6 @@ class AlarmManager(private val context: Context) {
         return newAlarm
     }
 
-
-
-    // In AlarmManager.kt
     fun toggleAlarm(alarmId: Int) {
         alarms.find { it.id == alarmId }?.let { alarm ->
             alarm.isEnabled = !alarm.isEnabled
@@ -99,6 +101,7 @@ class AlarmManager(private val context: Context) {
             }
         } ?: false
     }
+
     fun incrementSnoozeCount(alarmId: Int) {
         alarms.find { it.id == alarmId }?.let {
             it.currentSnoozeCount++
@@ -112,6 +115,7 @@ class AlarmManager(private val context: Context) {
             saveAlarms()
         }
     }
+
     fun isDailyResetEnabled(): Boolean {
         return sharedPrefs.getBoolean(Constants.DAILY_RESET_ENABLED_PREF, false)
     }
@@ -119,16 +123,19 @@ class AlarmManager(private val context: Context) {
     fun setDailyResetEnabled(enabled: Boolean) {
         sharedPrefs.edit().putBoolean(Constants.DAILY_RESET_ENABLED_PREF, enabled).apply()
     }
+
     fun updateDailyReset(alarmId: Int, isDailyReset: Boolean) {
         alarms.find { it.id == alarmId }?.isDailyReset = isDailyReset
         saveAlarms()
     }
+
     fun updateAlarmTime(alarmId: Int, newTime: Long) {
         alarms.find { it.id == alarmId }?.let {
             it.timeInMillis = newTime
             saveAlarms()
         }
     }
+
     fun deleteAlarm(alarmId: Int) {
         alarms.removeAll { it.id == alarmId }
         saveAlarms()
@@ -162,14 +169,12 @@ class AlarmManager(private val context: Context) {
             }
         }
 
-        // In calculateTriggerTime()
         Log.d("AlarmTime", "Calculated time: ${calendar.timeInMillis}")
         Log.d("AlarmTime", "Current:    ${SimpleDateFormat("dd-MM HH:mm:ss.SSS").format(Date(System.currentTimeMillis()))}")
 
         return calendar.timeInMillis
     }
 
-    // In AlarmManager.kt
     fun updateAlarm(updatedAlarm: Alarm) {
         val index = alarms.indexOfFirst { it.id == updatedAlarm.id }
         if (index != -1) {

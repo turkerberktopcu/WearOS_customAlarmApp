@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +38,8 @@ fun AlarmListScreen(navController: NavController) {
     val alarms = remember { mutableStateListOf<Alarm>() }
 
     fun refreshAlarms() {
+        // Reload alarms from persistent storage
+        alarmManager.reloadAlarms()
         val newAlarms = alarmManager.getAllAlarms().map { it.copy() }
         alarms.clear()
         alarms.addAll(newAlarms)
@@ -66,6 +67,7 @@ fun AlarmListScreen(navController: NavController) {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
+
     Scaffold(
         timeText = { TimeText() }
     ) {
@@ -76,7 +78,6 @@ fun AlarmListScreen(navController: NavController) {
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             // Add Alarm Button
             item {
                 Box(
@@ -95,7 +96,7 @@ fun AlarmListScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Alarm Ekle",
+                            contentDescription = "Add Alarm",
                             tint = MaterialTheme.colors.onPrimary,
                             modifier = Modifier.size(24.dp)
                         )
@@ -128,7 +129,6 @@ fun AlarmListScreen(navController: NavController) {
                             )
                             Text(
                                 text = alarm.label,
-                                // Font boyutu 36.sp yerine 14.sp olarak ayarlandı
                                 style = MaterialTheme.typography.body2.copy(fontSize = 14.sp),
                                 color = Color.White,
                                 maxLines = 1,
@@ -146,10 +146,9 @@ fun AlarmListScreen(navController: NavController) {
                                         alarmScheduler.cancelAlarm(alarm.id)
                                     }
                                 } catch (e: Exception) {
-                                    // Hata loglama
                                     e.printStackTrace()
                                 }
-                                // Force refresh after toggle
+                                // Refresh alarms after toggle
                                 refreshAlarms()
                             }
                         )
@@ -167,7 +166,7 @@ fun AlarmListScreen(navController: NavController) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Sil",
+                                contentDescription = "Delete",
                                 tint = Color.White
                             )
                         }

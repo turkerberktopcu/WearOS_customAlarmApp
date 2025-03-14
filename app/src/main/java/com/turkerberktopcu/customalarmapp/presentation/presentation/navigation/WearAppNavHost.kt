@@ -11,7 +11,6 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.turkerberktopcu.customalarmapp.presentation.AlarmEditScreen
 import com.turkerberktopcu.customalarmapp.presentation.AlarmListScreen
-import com.turkerberktopcu.customalarmapp.presentation.AlarmSettingsScreen
 import com.turkerberktopcu.customalarmapp.presentation.presentation.AlarmSoundSelectionScreen
 import com.turkerberktopcu.customalarmapp.presentation.presentation.VibrationSelectionScreen
 sealed class Screen(val route: String) {
@@ -38,9 +37,7 @@ fun WearAppNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             AlarmEditScreen(navController = navController)
         }
-        composable(Screen.AlarmSettings.route) {
-            AlarmSettingsScreen(navController = navController)
-        }
+
         composable("vibrationSelection") {
             VibrationSelectionScreen(
                 navController = navController,

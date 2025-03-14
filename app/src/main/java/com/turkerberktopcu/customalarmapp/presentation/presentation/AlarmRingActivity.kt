@@ -8,24 +8,29 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler
 import com.turkerberktopcu.customalarmapp.presentation.service.AlarmForegroundService
 import com.turkerberktopcu.customalarmapp.presentation.theme.CustomAlarmAppTheme
 import java.util.Calendar
-
 import kotlinx.coroutines.*
 
 class AlarmRingActivity : ComponentActivity() {
@@ -34,7 +39,7 @@ class AlarmRingActivity : ComponentActivity() {
     private var alarmLabel: String = "Alarm"
     private lateinit var alarmManager: com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmManager
     private lateinit var alarmScheduler: AlarmScheduler
-    private var autoSnoozeJob: Job? = null  // Otomatik ertelemeyi kontrol etmek için
+    private var autoSnoozeJob: Job? = null  // For auto snooze control
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,40 +60,32 @@ class AlarmRingActivity : ComponentActivity() {
             }
         }
 
-        // Alarm nesnesini alalım
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
-        val workingDuration = alarm?.workingDurationMillis ?: 300_000L  // varsayılan 5 dk
-        val breakDuration = alarm?.breakDurationMillis ?: 120_000L      // varsayılan 2 dk
+        val workingDuration = alarm?.workingDurationMillis ?: 300_000L  // Default 5 minutes
+        val breakDuration = alarm?.breakDurationMillis ?: 120_000L      // Default 2 minutes
 
-        // Eğer kullanıcı müdahalesi olmazsa, otomatik ertelemeyi başlat
+        // Start auto-snooze if the user does not interact
         autoSnoozeJob = CoroutineScope(Dispatchers.Main).launch {
             delay(workingDuration)
-            // Eğer kullanıcı müdahalesi gerçekleşmemişse, otomatik erteleme işlemini tetikle
             handleAutoSnooze(breakDuration)
         }
     }
 
     private fun handleAutoSnooze(breakDuration: Long) {
-        // Kullanıcı müdahalesi olmamışsa, alarmı otomatik olarak ertele (snooze)
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
         if (alarm != null) {
-            // Burada handleSnooze metodunu kullanabilir veya kendi erteleme metodunuzu çağırabilirsiniz
             val success = alarmManager.handleSnooze(alarmId)
             if (success) {
                 val newAlarmTime = System.currentTimeMillis() + breakDuration
                 alarmScheduler.scheduleAlarm(alarmId, newAlarmTime, alarmLabel)
             }
         }
-        // Alarmın sesini durdur ve aktiviteyi kapat
         stopService(Intent(this, AlarmForegroundService::class.java))
         finish()
     }
 
     private fun handleDismiss() {
-        // Kullanıcı müdahalesinde otomatik erteleme zamanlayıcısını iptal edin
         autoSnoozeJob?.cancel()
-
-        // Mevcut alarmı sonlandırma ve/veya yeniden programlama işlemleri...
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
         alarm?.let {
             alarmManager.resetSnoozeCount(it.id)
@@ -116,9 +113,7 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun handleSnooze() {
-        // Kullanıcı snooze'a bastığında otomatik erteleme zamanlayıcısını iptal edin
         autoSnoozeJob?.cancel()
-
         val alarm = alarmManager.getAllAlarms().find { it.id == alarmId }
         val success = alarmManager.handleSnooze(alarmId)
         if (success && alarm != null) {
@@ -157,6 +152,7 @@ class AlarmRingActivity : ComponentActivity() {
         navigateBack()
     }
 }
+
 @Composable
 fun AlarmRingScreen(
     label: String,
@@ -164,7 +160,6 @@ fun AlarmRingScreen(
     onSnooze: () -> Unit,
     onBack: () -> Unit
 ) {
-    // Import the Wear Compose MaterialTheme
     val wearMaterialTheme = androidx.wear.compose.material.MaterialTheme
 
     Box(
@@ -173,16 +168,15 @@ fun AlarmRingScreen(
             .background(Color.Black)
     ) {
         androidx.wear.compose.material.Scaffold(
-            timeText = { /* Remove TimeText to save space */ }
+            timeText = { }
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween // Distribute space evenly
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Compact header with small back button and minimal label
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -191,11 +185,11 @@ fun AlarmRingScreen(
                 ) {
                     IconButton(
                         onClick = onBack,
-                        modifier = Modifier.size(28.dp) // Even smaller back button
+                        modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = "Back",
                             tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
@@ -203,12 +197,10 @@ fun AlarmRingScreen(
                     Spacer(modifier = Modifier.width(2.dp))
                     androidx.wear.compose.material.Text(
                         text = label,
-                        style = wearMaterialTheme.typography.caption1, // Much smaller title
+                        style = wearMaterialTheme.typography.caption1,
                         color = Color.White
                     )
                 }
-
-                // Display current time
                 val calendar = Calendar.getInstance()
                 val hour = calendar.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0')
                 val minute = calendar.get(Calendar.MINUTE).toString().padStart(2, '0')
@@ -216,10 +208,8 @@ fun AlarmRingScreen(
                 androidx.wear.compose.material.Text(
                     text = "$hour:$minute",
                     color = Color.White,
-                    style = wearMaterialTheme.typography.display1 // Smaller time display
+                    style = wearMaterialTheme.typography.display1
                 )
-
-                // Action buttons in a more compact arrangement
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -227,43 +217,165 @@ fun AlarmRingScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Dismiss button
-                    androidx.wear.compose.material.Button(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f) // Even narrower button
-                            .height(36.dp), // Fixed height for smaller button
-                        colors = androidx.wear.compose.material.ButtonDefaults.buttonColors(
-                            backgroundColor = androidx.wear.compose.material.MaterialTheme.colors.primary
-                        )
-                    ) {
-                        androidx.wear.compose.material.Text(
-                            "Kapat",
-                            color = Color.Black,
-                            style = wearMaterialTheme.typography.button
-                        )
-                    }
+                    // Dismiss slider
+                    MinimalistSliderDismiss(onDismiss = onDismiss)
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // Snooze button
-                    androidx.wear.compose.material.Button(
-                        onClick = onSnooze,
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f) // Even narrower button
-                            .height(36.dp), // Fixed height for smaller button
-                        colors = androidx.wear.compose.material.ButtonDefaults.buttonColors(
-                            backgroundColor = androidx.wear.compose.material.MaterialTheme.colors.secondary
-                        )
-                    ) {
-                        androidx.wear.compose.material.Text(
-                            "Ertele",
-                            color = Color.Black,
-                            style = wearMaterialTheme.typography.button
-                        )
-                    }
+                    // Snooze slider ("Ertele") with yellowish knob
+                    MinimalistSliderSnooze(onSnooze = onSnooze)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun MinimalistSliderDismiss(onDismiss: () -> Unit) {
+    var offsetX by remember { mutableStateOf(0f) }
+    val dismissThreshold = 100.dp       // Reduced threshold
+    val sliderWidth = 150.dp            // Smaller slider width
+    val sliderHeight = 36.dp            // Keep slider height
+    val knobWidth = 40.dp               // Smaller knob width
+
+    val dismissThresholdPx = with(LocalDensity.current) { dismissThreshold.toPx() }
+    val sliderWidthPx = with(LocalDensity.current) { sliderWidth.toPx() }
+    val knobWidthPx = with(LocalDensity.current) { knobWidth.toPx() }
+
+    Box(
+        modifier = Modifier
+            .width(sliderWidth)
+            .height(sliderHeight)
+            .background(
+                color = Color(0x33FFFFFF),
+                shape = RoundedCornerShape(18.dp)
+            )
+    ) {
+        // Track text for dismiss slider
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "Kapat",
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            )
+        }
+
+        // Slider knob for dismiss slider (green)
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(offsetX.toInt(), 0) }
+                .width(knobWidth)
+                .fillMaxHeight()
+                .background(
+                    color = Color(0xFF4CAF50),
+                    shape = RoundedCornerShape(18.dp)
+                )
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragEnd = {
+                            if (offsetX > dismissThresholdPx) {
+                                onDismiss()
+                            } else {
+                                offsetX = 0f
+                            }
+                        },
+                        onDragCancel = { offsetX = 0f },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetX = (offsetX + dragAmount.x).coerceIn(0f, sliderWidthPx - knobWidthPx)
+                        }
+                    )
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Kaydır",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(16.dp)
+                    .graphicsLayer(rotationZ = 180f)
+            )
+        }
+    }
+}
+
+@Composable
+fun MinimalistSliderSnooze(onSnooze: () -> Unit) {
+    var offsetX by remember { mutableStateOf(0f) }
+    val snoozeThreshold = 100.dp       // Threshold for snooze slider
+    val sliderWidth = 150.dp           // Slider width
+    val sliderHeight = 36.dp           // Slider height
+    val knobWidth = 40.dp              // Knob width
+
+    val snoozeThresholdPx = with(LocalDensity.current) { snoozeThreshold.toPx() }
+    val sliderWidthPx = with(LocalDensity.current) { sliderWidth.toPx() }
+    val knobWidthPx = with(LocalDensity.current) { knobWidth.toPx() }
+
+    Box(
+        modifier = Modifier
+            .width(sliderWidth)
+            .height(sliderHeight)
+            .background(
+                color = Color(0x33FFFFFF),
+                shape = RoundedCornerShape(18.dp)
+            )
+    ) {
+        // Track text for snooze slider (with yellowish tint)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "Ertele",
+                style = androidx.compose.ui.text.TextStyle(
+                    fontSize = 12.sp,
+                    color = Color(0xFFFFEB3B)
+                )
+            )
+        }
+
+        // Slider knob for snooze slider (yellowish)
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(offsetX.toInt(), 0) }
+                .width(knobWidth)
+                .fillMaxHeight()
+                .background(
+                    color = Color(0xFFFFEB3B), // Yellowish knob
+                    shape = RoundedCornerShape(18.dp)
+                )
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragEnd = {
+                            if (offsetX > snoozeThresholdPx) {
+                                onSnooze()
+                            } else {
+                                offsetX = 0f
+                            }
+                        },
+                        onDragCancel = { offsetX = 0f },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetX = (offsetX + dragAmount.x).coerceIn(0f, sliderWidthPx - knobWidthPx)
+                        }
+                    )
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Kaydır",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(16.dp)
+                    .graphicsLayer(rotationZ = 180f)
+            )
         }
     }
 }
