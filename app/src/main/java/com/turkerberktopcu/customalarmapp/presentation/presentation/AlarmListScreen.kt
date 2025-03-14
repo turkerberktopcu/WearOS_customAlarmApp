@@ -6,7 +6,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -78,7 +77,6 @@ fun AlarmListScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-
             // Add Alarm Button
             item {
                 Box(
@@ -130,7 +128,9 @@ fun AlarmListScreen(navController: NavController) {
                             )
                             Text(
                                 text = alarm.label,
-                                style = MaterialTheme.typography.body2.copy(fontSize = 36.sp),                                color = Color.White,
+                                // Font boyutu 36.sp yerine 14.sp olarak ayarlandı
+                                style = MaterialTheme.typography.body2.copy(fontSize = 14.sp),
+                                color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -138,11 +138,16 @@ fun AlarmListScreen(navController: NavController) {
                         Switch(
                             checked = alarm.isEnabled,
                             onCheckedChange = { newValue ->
-                                alarmManager.toggleAlarm(alarm.id)
-                                if (newValue) {
-                                    alarmScheduler.scheduleAlarm(alarm.id, alarm.timeInMillis, alarm.label)
-                                } else {
-                                    alarmScheduler.cancelAlarm(alarm.id)
+                                try {
+                                    alarmManager.toggleAlarm(alarm.id)
+                                    if (newValue) {
+                                        alarmScheduler.scheduleAlarm(alarm.id, alarm.timeInMillis, alarm.label)
+                                    } else {
+                                        alarmScheduler.cancelAlarm(alarm.id)
+                                    }
+                                } catch (e: Exception) {
+                                    // Hata loglama
+                                    e.printStackTrace()
                                 }
                                 // Force refresh after toggle
                                 refreshAlarms()
@@ -150,10 +155,14 @@ fun AlarmListScreen(navController: NavController) {
                         )
                         IconButton(
                             onClick = {
-                                alarmManager.deleteAlarm(alarm.id)
-                                alarmScheduler.cancelAlarm(alarm.id)
-                                alarms.clear()
-                                alarms.addAll(alarmManager.getAllAlarms())
+                                try {
+                                    alarmManager.deleteAlarm(alarm.id)
+                                    alarmScheduler.cancelAlarm(alarm.id)
+                                    alarms.clear()
+                                    alarms.addAll(alarmManager.getAllAlarms())
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                             }
                         ) {
                             Icon(
@@ -168,8 +177,6 @@ fun AlarmListScreen(navController: NavController) {
         }
     }
 }
-
-
 
 @Preview(device = "id:wearos_small_round", showSystemUi = true)
 @Composable
