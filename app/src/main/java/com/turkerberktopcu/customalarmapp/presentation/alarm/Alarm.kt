@@ -2,6 +2,7 @@ package com.turkerberktopcu.customalarmapp.presentation.alarm
 
 import android.content.Context
 import android.media.RingtoneManager
+import android.os.Build
 import android.os.Parcelable
 import android.os.VibrationEffect
 import kotlinx.parcelize.Parcelize
@@ -53,13 +54,47 @@ sealed class VibrationPattern : Parcelable {
 
     fun getEffect(context: Context): VibrationEffect? {
         return when (this) {
-            Default -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
-            Short -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-            Long -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
-            None -> null
-            else -> VibrationEffect.createOneShot(1000, 255)
+            VibrationPattern.Default -> {
+                // Try to create a predefined effect; if not supported, fall back.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Predefined effects might not be supported on older API levels, so use one-shot.
+                    VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    null
+                }
+            }
+            VibrationPattern.Short -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    null
+                }
+            }
+            VibrationPattern.Long -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    null
+                }
+            }
+            VibrationPattern.Custom -> {
+                // Example custom pattern: vibrate for 1 second.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    VibrationEffect.createOneShot(1000, 255)
+                } else {
+                    null
+                }
+            }
+            VibrationPattern.None -> null
         }
     }
+
 }
 class VibrationPatternAdapter : TypeAdapter<VibrationPattern?>() {
     override fun write(out: JsonWriter, value: VibrationPattern?) {

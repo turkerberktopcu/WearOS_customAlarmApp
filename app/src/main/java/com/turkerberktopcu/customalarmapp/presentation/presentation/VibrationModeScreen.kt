@@ -10,17 +10,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.wear.compose.material.rememberScalingLazyListState
-import androidx.wear.compose.material.Card
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.PositionIndicator
-import androidx.wear.compose.material.Scaffold
-import androidx.wear.compose.material.ScalingLazyColumn
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.compose.material.items
+import androidx.wear.compose.material.*
 import com.turkerberktopcu.customalarmapp.presentation.alarm.VibrationPattern
-import com.turkerberktopcu.customalarmapp.presentation.getDisplayName
+
+// Local extension function for VibrationPattern display name
+fun VibrationPattern.getDisplayName(): String {
+    return when (this) {
+        VibrationPattern.Default -> "Default"
+        VibrationPattern.Short -> "Short"
+        VibrationPattern.Long -> "Long"
+        VibrationPattern.Custom -> "Custom"
+        VibrationPattern.None -> "No Vibration"
+    }
+}
 
 @Composable
 fun VibrationSelectionScreen(navController: NavController, onVibrationSelected: (VibrationPattern) -> Unit) {
@@ -46,11 +48,12 @@ fun VibrationSelectionScreen(navController: NavController, onVibrationSelected: 
             state = scrollState  // Connect the scroll state to the column
         ) {
             item {
-                Text("Select Vibration",
+                Text(
+                    "Select Vibration",
                     style = MaterialTheme.typography.title2,
-                    modifier = Modifier.padding(8.dp))
+                    modifier = Modifier.padding(8.dp)
+                )
             }
-
             items(vibrationModes) { pattern ->
                 VibrationModeItem(
                     pattern = pattern,

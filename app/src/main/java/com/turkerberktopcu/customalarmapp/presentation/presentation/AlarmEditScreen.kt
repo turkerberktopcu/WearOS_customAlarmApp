@@ -15,6 +15,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -48,15 +50,15 @@ fun AlarmEditScreen(navController: NavController) {
         ?.toIntOrNull()
     val alarm = alarmId?.let { id -> alarmManager.alarms.find { it.id == id } }
 
-    // Tanımlı saat ve dakika listeleri
+    // Defined hour and minute lists
     val hours = (0..23).toList()
     val minutes = (0..59).toList()
 
-    // Picker state'leri
+    // Picker states
     val hourPickerState = rememberPickerState(initialNumberOfOptions = hours.size, initiallySelectedOption = alarm?.hour ?: 6)
     val minutePickerState = rememberPickerState(initialNumberOfOptions = minutes.size, initiallySelectedOption = alarm?.minute ?: 0)
 
-    // Derived state ile seçili saat ve dakika
+    // Derived state for selected hour and minute
     val selectedHour by remember { derivedStateOf { hours[hourPickerState.selectedOption] } }
     val selectedMinute by remember { derivedStateOf { minutes[minutePickerState.selectedOption] } }
 
@@ -67,7 +69,7 @@ fun AlarmEditScreen(navController: NavController) {
     // Daily reset
     var dailyResetEnabled by remember { mutableStateOf(alarm?.isDailyReset ?: false) }
 
-    // Snooze count, interval, working & break duration listeleri ve picker state'leri
+    // Snooze counts and pickers
     val snoozeCounts = listOf(0) + (1..10).toList()
     val snoozePickerState = rememberPickerState(initialNumberOfOptions = snoozeCounts.size, initiallySelectedOption = alarm?.maxSnoozeCount ?: 0)
     val selectedSnoozeCount by remember { derivedStateOf { snoozeCounts[snoozePickerState.selectedOption] } }
@@ -93,17 +95,15 @@ fun AlarmEditScreen(navController: NavController) {
     )
     val selectedBreakDurationMinutes by remember { derivedStateOf { breakDurationOptions[breakDurationPickerState.selectedOption] } }
 
-    // Vibration pattern: saved state üzerinden güncelleme
+    // Vibration pattern: update from saved state
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-    val selectedVibration by savedStateHandle?.getStateFlow<VibrationPattern?>(
-        "selectedVibration",
-        alarm?.vibrationPattern ?: VibrationPattern.None
-    )?.collectAsState() ?: remember { mutableStateOf(alarm?.vibrationPattern ?: VibrationPattern.None) }
+    val selectedVibration by savedStateHandle?.getStateFlow<VibrationPattern?>( "selectedVibration", alarm?.vibrationPattern ?: VibrationPattern.None )?.collectAsState()
+        ?: remember { mutableStateOf(alarm?.vibrationPattern ?: VibrationPattern.None) }
     LaunchedEffect(alarm) {
         alarm?.let { savedStateHandle?.set("selectedVibration", it.vibrationPattern) }
     }
 
-    // Alarm sound selection: yerel state
+    // Alarm sound selection state
     var selectedAlarmSound by remember { mutableStateOf(alarm?.alarmSoundUri ?: "") }
     LaunchedEffect(savedStateHandle?.get<String>("selectedAlarmSound")) {
         savedStateHandle?.get<String>("selectedAlarmSound")?.let {
@@ -123,7 +123,7 @@ fun AlarmEditScreen(navController: NavController) {
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Warning message if permission isn't granted
+            // Warning if exact alarm permission is not granted
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !systemAlarmManager.canScheduleExactAlarms()) {
                 item {
                     Column(
@@ -212,7 +212,7 @@ fun AlarmEditScreen(navController: NavController) {
                 }
             }
 
-            // Saat/Dakika Picker'ları yan yana göster
+            // Hour/Minute Pickers side by side
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -429,7 +429,7 @@ private fun handleAlarmSave(
     val alarmScheduler = com.turkerberktopcu.customalarmapp.presentation.alarm.AlarmScheduler(context)
     val systemAlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    // API 31 ve üzeri cihazlarda exact alarm izni kontrolü yapıyoruz.
+    // For API 31+ devices, check for exact alarm permission
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !systemAlarmManager.canScheduleExactAlarms()) {
         Log.w("handleAlarmSave", "Exact alarm izni verilmedi. İzin ekranına yönlendiriliyor.")
         Toast.makeText(
